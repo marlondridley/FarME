@@ -24,8 +24,8 @@ try {
     localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
   });
 } catch (e) {
-  console.error('Firestore persistence error:', e);
-  // Fallback to in-memory persistence if indexedDB fails
+  console.error("Could not initialize Firestore with offline persistence", e);
+  // Fallback to default firestore instance if persistence fails
   db = getFirestore(app);
 }
 
