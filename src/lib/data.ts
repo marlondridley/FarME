@@ -1,12 +1,9 @@
 
 import type { Farm, Product } from './types';
 import { placeholderImages } from './placeholder-images';
-import { getUsdaFarms } from './usda';
+import { getFarmsFromFirestore } from './database';
 
 const getImageUrl = (id: string) => placeholderImages.find(p => p.id === id)?.imageUrl || 'https://placehold.co/400x300';
-
-// This is now fetched from the USDA API in the page components.
-export const farms: Farm[] = [];
 
 export const products: Product[] = [
   {
@@ -65,60 +62,25 @@ export const products: Product[] = [
   }
 ];
 
-export async function getFarms(options: {x: number, y: number, radius: number}): Promise<Farm[]> {
-    const usdaFarms = await getUsdaFarms(options);
-
-    const farmData: Farm[] = usdaFarms.map((usdaFarm, index) => {
-        const farmId = usdaFarm.listing_id || `${usdaFarm.listing_name.replace(/\s+/g, '-').toLowerCase()}-${index}`;
-
-        let type: 'farm' | 'market' | 'vendor' = 'vendor';
-        if (usdaFarm.directory === 'farmersmarket') {
-            type = 'market';
-        } else if (usdaFarm.directory === 'agritourism' || usdaFarm.directory === 'onfarmmarket' || usdaFarm.directory === 'csa') {
-            type = 'farm';
-        }
-        
+export async function getFarms(): Promise<Farm[]> {
+    const farms = await getFarmsFromFirestore();
+    return farms.map((farm, index) => {
         const logoUrlId = `farm-logo-${(index % 4) + 1}`;
         const heroUrlId = `farm-hero-${(index % 4) + 1}`;
-        
-        const distanceNumber = parseFloat(usdaFarm.distance as any);
-
         return {
-            id: farmId,
-            name: usdaFarm.listing_name,
-            bio: usdaFarm.listing_description || 'A local food provider.',
-            location: {
-                lat: usdaFarm.location_y,
-                lng: usdaFarm.location_x,
-                address: `${usdaFarm.location_city}, ${usdaFarm.location_state}`,
-            },
-            products: ['heirloom-tomatoes', 'green-lettuce'], // Sample products
-            type: type,
-            rating: Math.random() * (5 - 3.5) + 3.5, // Random rating between 3.5 and 5
-            distance: !isNaN(distanceNumber) ? parseFloat(distanceNumber.toFixed(1)) : 0,
+            ...farm,
             logoUrl: getImageUrl(logoUrlId),
             heroUrl: getImageUrl(heroUrlId),
-        };
+        }
     });
-
-    return farmData;
 }
 
 export async function getFarmById(id: string): Promise<Farm | null> {
     if (!id) return null;
 
-    // In a real app, you'd fetch from a DB. Here, we fetch from the API with a wide radius.
-    // This is inefficient but necessary for this demo architecture.
-    const allFarms = await getFarms({ y: 39.8283, x: -98.5795, radius: 5000 }); // Wide search
+    const allFarms = await getFarms();
     
     let farm = allFarms.find(f => f.id === id);
-
-    // If not found by the generated ID, try to find it by name as a fallback.
-    // This handles cases where the ID might be generated differently on separate loads.
-    if (!farm) {
-      const potentialName = id.replace(/-\d+$/, '').replace(/-/g, ' ');
-      farm = allFarms.find(f => f.name.toLowerCase().includes(potentialName));
-    }
 
     if (farm) {
         // Enhance the found farm with a richer product list for the detail page.
@@ -126,6 +88,5 @@ export async function getFarmById(id: string): Promise<Farm | null> {
         return farm;
     }
 
-    console.warn(`Could not find farm with id: ${id}. No fallback mock will be returned.`);
     return null;
 }

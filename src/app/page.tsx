@@ -43,44 +43,22 @@ export default function Home() {
   const { toast } = useToast();
   const [farms, setFarms] = useState<Farm[]>([]);
   const [loading, setLoading] = useState(true);
-  const [locationError, setLocationError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchFarms = async (latitude: number, longitude: number) => {
+    const fetchFarms = async () => {
       setLoading(true);
       try {
-        const fetchedFarms = await getFarms({ y: latitude, x: longitude, radius: 50 });
+        const fetchedFarms = await getFarms();
         setFarms(fetchedFarms);
       } catch (error) {
         console.error("Failed to fetch farms:", error);
-        setLocationError("Could not fetch farm data. Please try again later.");
+        setError("Could not fetch farm data. Please try again later.");
       } finally {
         setLoading(false);
       }
     };
-
-    const getLocation = () => {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            setLocationError(null);
-            fetchFarms(position.coords.latitude, position.coords.longitude);
-          },
-          (error) => {
-            console.error("Geolocation error:", error);
-            // Default to Sacramento if permission is denied
-            setLocationError("Location access denied. Showing results for a default location.");
-            fetchFarms(38.5816, -121.4944);
-          }
-        );
-      } else {
-        // Geolocation not supported
-        setLocationError("Geolocation is not supported by your browser. Showing results for a default location.");
-        fetchFarms(38.5816, -121.4944);
-      }
-    };
-
-    getLocation();
+    fetchFarms();
   }, []);
   
   const farmsToShow = user ? farms : farms.slice(0, 3);
@@ -145,12 +123,12 @@ export default function Home() {
 
           </SheetHeader>
           <div className="flex-grow overflow-auto p-4 space-y-4 -mx-4">
-            {locationError && (
-                 <Alert variant="default" className="bg-yellow-100/10 border-yellow-500/30">
-                  <AlertTriangle className="h-4 w-4 !text-yellow-500" />
-                  <AlertTitle>Location Notice</AlertTitle>
-                  <AlertDescription className="text-yellow-500/80">
-                    {locationError}
+            {error && (
+                 <Alert variant="destructive">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertTitle>Error</AlertTitle>
+                  <AlertDescription>
+                    {error}
                   </AlertDescription>
                 </Alert>
             )}
@@ -168,7 +146,7 @@ export default function Home() {
                 <div className="flex flex-col items-center justify-center h-full text-center">
                     <MapPin className="w-12 h-12 text-muted-foreground/50 mb-4" />
                     <h3 className="text-lg font-semibold">No Farms Found</h3>
-                    <p className="text-muted-foreground">We couldn't find any farms in this area.</p>
+                    <p className="text-muted-foreground">We couldn't find any farms in our database. Once data is added, it will appear here.</p>
                 </div>
             )}
             

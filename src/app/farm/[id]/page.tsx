@@ -99,9 +99,11 @@ export default function FarmPage({ params }: { params: { id: string } }) {
                   <span className="text-muted-foreground">(500+ ratings)</span>
                 </div>
                  <Separator orientation="vertical" className="h-4 bg-border" />
-                <div className="flex items-center gap-1">
-                  <span>{farm.distance} km away</span>
-                </div>
+                 {farm.distance && (
+                    <div className="flex items-center gap-1">
+                        <span>{farm.distance.toFixed(1)} km away</span>
+                    </div>
+                 )}
               </div>
             </div>
             <Button onClick={handleFavoriteClick} variant="outline" size="icon" className="rounded-full w-12 h-12 shrink-0">

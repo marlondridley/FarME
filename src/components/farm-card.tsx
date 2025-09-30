@@ -33,10 +33,12 @@ export default function FarmCard({ farm, isGuest = false }: { farm: Farm, isGues
               <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
               <span>{isGuest ? '?.?' : farm.rating.toFixed(1)}</span>
             </div>
-            <div className='flex items-center gap-1'>
-              <MapPin className="w-4 h-4" />
-              <span>{isGuest ? '? ' : farm.distance} km</span>
-            </div>
+            {farm.distance && (
+              <div className='flex items-center gap-1'>
+                <MapPin className="w-4 h-4" />
+                <span>{isGuest ? '? ' : farm.distance.toFixed(1)} km</span>
+              </div>
+            )}
              <div className='flex items-center gap-1 capitalize'>
               <TypeIcon className='w-4 h-4' />
               <span>{farm.type}</span>
