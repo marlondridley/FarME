@@ -27,28 +27,40 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (firebaseUser) {
         const userDocRef = doc(db, 'users', firebaseUser.uid);
         try {
-          // Try to get from cache first for offline speed
-          let userDoc;
-          try {
-            userDoc = await getDocFromCache(userDocRef);
-            if (!userDoc.exists()) {
-              // If not in cache, fetch from server
-              userDoc = await getDoc(userDocRef);
-            }
-          } catch (e) {
-             // If cache fails, fetch from server
-             userDoc = await getDoc(userDocRef);
-          }
+          // Try fetching from the server first to get the most up-to-date user role.
+          const userDoc = await getDoc(userDocRef);
           
           if (userDoc.exists()) {
             setUser({ ...firebaseUser, role: userDoc.data().role });
           } else {
-            setUser(firebaseUser); 
+             // If the doc doesn't exist on the server, check the cache.
+             // This can happen if the user is offline and the doc was created recently.
+            try {
+              const cachedDoc = await getDocFromCache(userDocRef);
+              if (cachedDoc.exists()) {
+                setUser({ ...firebaseUser, role: cachedDoc.data().role });
+              } else {
+                setUser(firebaseUser); // No role info available.
+              }
+            } catch (cacheError) {
+                console.error("Error fetching user from cache:", cacheError);
+                setUser(firebaseUser); // Fallback to user without role.
+            }
           }
         } catch (error) {
-          console.error("Error fetching user role, user might be offline or doc doesn't exist yet", error);
-          // Gracefully handle offline case by setting user without the role.
-          setUser(firebaseUser);
+          console.error("Error fetching user role, user might be offline or doc doesn't exist yet. Trying cache.", error);
+          // If server fails (e.g., offline), gracefully fall back to cache.
+          try {
+             const userDoc = await getDocFromCache(userDocRef);
+             if (userDoc.exists()) {
+                setUser({ ...firebaseUser, role: userDoc.data().role });
+             } else {
+                setUser(firebaseUser);
+             }
+          } catch (cacheError) {
+            console.error("Failed to get user from server or cache:", cacheError);
+            setUser(firebaseUser); // Fallback to user without role info.
+          }
         }
       } else {
         setUser(null);
