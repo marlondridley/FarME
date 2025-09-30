@@ -3,7 +3,7 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, getDocFromCache } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { Loader2 } from 'lucide-react';
 
@@ -27,13 +27,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (firebaseUser) {
         const userDocRef = doc(db, 'users', firebaseUser.uid);
         try {
-          const userDoc = await getDoc(userDocRef);
+          // Try to get from cache first for offline speed
+          let userDoc;
+          try {
+            userDoc = await getDocFromCache(userDocRef);
+            if (!userDoc.exists()) {
+              // If not in cache, fetch from server
+              userDoc = await getDoc(userDocRef);
+            }
+          } catch (e) {
+             // If cache fails, fetch from server
+             userDoc = await getDoc(userDocRef);
+          }
+          
           if (userDoc.exists()) {
             setUser({ ...firebaseUser, role: userDoc.data().role });
           } else {
-            // This case can happen right after registration before the doc is created
-            // Or if there's an issue creating the doc. We'll set the user without a role
-            // and the role will be picked up on next refresh if available.
             setUser(firebaseUser); 
           }
         } catch (error) {
