@@ -17,26 +17,6 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 
-const MapPinButton = ({ top, left, name, farmId }: { top: string, left: string, name: string, farmId: string }) => (
-  <div className="absolute z-10" style={{ top, left, transform: 'translate(-50%, -50%)' }}>
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Link href={`/farm/${farmId}`}>
-            <Button variant="secondary" size="icon" className="rounded-full w-10 h-10 shadow-md border-2 border-white">
-              <MapPin className="w-5 h-5 text-primary fill-primary" />
-            </Button>
-          </Link>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>{name}</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  </div>
-);
-
-
 export default function Home() {
   const mapImage = placeholderImageData.placeholderImages.find(p => p.id === 'map-background');
   const { user } = useAuth();
@@ -48,6 +28,7 @@ export default function Home() {
   useEffect(() => {
     const fetchFarms = async () => {
       setLoading(true);
+      setError(null);
       try {
         const fetchedFarms = await getFarms();
         setFarms(fetchedFarms);
@@ -61,8 +42,6 @@ export default function Home() {
     fetchFarms();
   }, []);
   
-  const farmsToShow = user ? farms : farms.slice(0, 3);
-
   return (
     <div className="relative w-full h-full overflow-hidden">
       <div className="absolute inset-0 z-0">
@@ -101,12 +80,6 @@ export default function Home() {
         </Button>
       </div>
 
-      {/* Dynamic map pins based on fetched farms */}
-      {!loading && farms.slice(0, 3).map((farm, index) => {
-         const positions = [ { top: '30%', left: '40%' }, { top: '50%', left: '60%' }, { top: '65%', left: '35%' }];
-         return <MapPinButton key={farm.id} top={positions[index].top} left={positions[index].left} name={farm.name} farmId={farm.id} />
-      })}
-
       <Sheet>
         <SheetTrigger asChild>
           <Button
@@ -138,26 +111,28 @@ export default function Home() {
                     <Loader2 className="w-8 h-8 animate-spin text-muted-foreground mb-4" />
                     <p className="text-muted-foreground">Finding farms near you...</p>
                 </div>
-            ) : farmsToShow.length > 0 ? (
-                farmsToShow.map(farm => (
-                  <FarmCard key={farm.id} farm={farm} isGuest={!user} />
-                ))
             ) : (
-                <div className="flex flex-col items-center justify-center h-full text-center">
-                    <MapPin className="w-12 h-12 text-muted-foreground/50 mb-4" />
-                    <h3 className="text-lg font-semibold">No Farms Found</h3>
-                    <p className="text-muted-foreground">We couldn't find any farms in our database. Once data is added, it will appear here.</p>
-                </div>
-            )}
-            
-            {!user && !loading && (
-              <div className="p-4 text-center bg-muted/50 rounded-lg">
-                <h3 className="font-semibold">Want to see more?</h3>
-                <p className="text-sm text-muted-foreground mb-4">Create an account to view all local farms and unlock exclusive features.</p>
-                <Button asChild>
-                  <Link href="/signup">Sign Up Now</Link>
-                </Button>
-              </div>
+              <>
+                {(user ? farms : farms.slice(0, 3)).map(farm => (
+                  <FarmCard key={farm.id} farm={farm} isGuest={!user} />
+                ))}
+                {!user && (
+                  <div className="p-4 text-center bg-muted/50 rounded-lg">
+                    <h3 className="font-semibold">Want to see more?</h3>
+                    <p className="text-sm text-muted-foreground mb-4">Create an account to view all local farms and unlock exclusive features.</p>
+                    <Button asChild>
+                      <Link href="/signup">Sign Up Now</Link>
+                    </Button>
+                  </div>
+                )}
+                 {farms.length === 0 && !error && (
+                    <div className="flex flex-col items-center justify-center h-full text-center">
+                        <MapPin className="w-12 h-12 text-muted-foreground/50 mb-4" />
+                        <h3 className="text-lg font-semibold">No Farms Found</h3>
+                        <p className="text-muted-foreground">We couldn't find any farms in our database. Once data is added, it will appear here.</p>
+                    </div>
+                )}
+              </>
             )}
           </div>
         </SheetContent>
