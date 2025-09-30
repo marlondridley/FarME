@@ -80,6 +80,8 @@ export async function getFarms(options: {x: number, y: number, radius: number}):
         const logoUrlId = `farm-logo-${(index % 4) + 1}`;
         const heroUrlId = `farm-hero-${(index % 4) + 1}`;
         
+        const distanceNumber = parseFloat(usdaFarm.distance as any);
+
         return {
             id: farmId,
             name: usdaFarm.listing_name,
@@ -92,7 +94,7 @@ export async function getFarms(options: {x: number, y: number, radius: number}):
             products: [],
             type: type,
             rating: Math.random() * (5 - 3.5) + 3.5, // Random rating between 3.5 and 5
-            distance: usdaFarm.distance ? parseFloat(usdaFarm.distance.toFixed(1)) : 0,
+            distance: !isNaN(distanceNumber) ? parseFloat(distanceNumber.toFixed(1)) : 0,
             logoUrl: getImageUrl(logoUrlId),
             heroUrl: getImageUrl(heroUrlId),
         };
