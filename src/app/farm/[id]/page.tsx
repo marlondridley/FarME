@@ -1,3 +1,6 @@
+
+"use client";
+
 import { farms, products as allProducts } from '@/lib/data';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
@@ -8,13 +11,38 @@ import { Heart, Leaf, MapPin, Star, Truck, Info, ArrowLeft } from 'lucide-react'
 import { Badge } from '@/components/ui/badge';
 import { placeholderImages } from '@/lib/placeholder-images';
 import { Separator } from '@/components/ui/separator';
+import { useAuth } from '@/hooks/use-auth';
+import { useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 export default function FarmPage({ params }: { params: { id: string } }) {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [isFavorited, setIsFavorited] = useState(false);
+
   const farm = farms.find(f => f.id === params.id);
   
   if (!farm) {
     notFound();
   }
+
+  const handleFavoriteClick = () => {
+    if (!user) {
+      toast({
+        variant: 'destructive',
+        title: 'Login Required',
+        description: 'You need to be logged in to favorite a farm.',
+      });
+      return;
+    }
+    // Here you would typically update the database
+    setIsFavorited(!isFavorited);
+    toast({
+      title: isFavorited ? 'Removed from Favorites' : 'Added to Favorites',
+      description: `${farm.name} has been ${isFavorited ? 'removed from' : 'added to'} your favorites.`,
+    });
+  };
 
   const farmProducts = allProducts.filter(p => farm.products.includes(p.id));
   const heroImage = placeholderImages.find(p => farm.heroUrl.includes(p.id));
@@ -51,8 +79,8 @@ export default function FarmPage({ params }: { params: { id: string } }) {
                 </div>
               </div>
             </div>
-            <Button variant="outline" size="icon" className="rounded-full w-12 h-12 shrink-0">
-              <Heart className="w-6 h-6" />
+            <Button onClick={handleFavoriteClick} variant="outline" size="icon" className="rounded-full w-12 h-12 shrink-0">
+              <Heart className={cn("w-6 h-6 transition-colors", isFavorited && "fill-red-500 text-red-500")} />
               <span className="sr-only">Favorite</span>
             </Button>
           </div>
