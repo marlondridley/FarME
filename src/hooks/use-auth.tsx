@@ -31,11 +31,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           if (userDoc.exists()) {
             setUser({ ...firebaseUser, role: userDoc.data().role });
           } else {
-            setUser(firebaseUser); // Role not yet created during registration
+            // This case can happen right after registration before the doc is created
+            // Or if there's an issue creating the doc.
+            setUser(firebaseUser); 
           }
         } catch (error) {
           console.error("Error fetching user role, user might be offline", error);
-          setUser(firebaseUser); // Proceed without role if Firestore is offline
+          // Gracefully handle offline case by setting user without the role.
+          // The role will be populated later or on next reload when online.
+          setUser(firebaseUser);
         }
       } else {
         setUser(null);
@@ -46,17 +50,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => unsubscribe();
   }, []);
 
-  const value = { user, loading };
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-background">
+        <Loader2 className="w-12 h-12 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
-    <AuthContext.Provider value={value}>
-      {loading ? (
-         <div className="flex items-center justify-center h-screen bg-background">
-           <Loader2 className="w-12 h-12 animate-spin text-primary" />
-         </div>
-      ) : (
-        children
-      )}
+    <AuthContext.Provider value={{ user, loading }}>
+      {children}
     </AuthContext.Provider>
   );
 };
