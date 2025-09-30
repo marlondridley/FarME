@@ -34,6 +34,7 @@ const MapPinButton = ({ top, left, name, farmId }: { top: string, left: string, 
   </div>
 );
 
+
 export default function Home() {
   const mapImage = placeholderImageData.placeholderImages.find(p => p.id === 'map-background');
   const { user } = useAuth();
