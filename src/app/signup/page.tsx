@@ -33,8 +33,8 @@ export default function SignupPage() {
           </CardHeader>
           <CardContent className="flex-grow flex flex-col">
             <div className="text-center my-4">
-              <span className="text-5xl font-bold">$0.99</span>
-              <span className="text-muted-foreground">/month</span>
+              <span className="text-5xl font-bold">$12</span>
+              <span className="text-muted-foreground">/year</span>
             </div>
             <ul className="space-y-3 text-sm flex-grow">
               {consumerFeatures.map((feature, i) => (
@@ -56,8 +56,8 @@ export default function SignupPage() {
           </CardHeader>
           <CardContent className="flex-grow flex flex-col">
             <div className="text-center my-4">
-              <span className="text-5xl font-bold">$1.99</span>
-              <span className="text-muted-foreground">/month</span>
+              <span className="text-5xl font-bold">$24</span>
+              <span className="text-muted-foreground">/year</span>
             </div>
             <ul className="space-y-3 text-sm flex-grow">
                {farmerFeatures.map((feature, i) => (
