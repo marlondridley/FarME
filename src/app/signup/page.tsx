@@ -13,7 +13,6 @@ const farmerFeatures = [
   "List your farm and products",
   "Reach new local customers",
   "Manage orders and inventory",
-  "AI-powered crop suggestions",
 ];
 
 
