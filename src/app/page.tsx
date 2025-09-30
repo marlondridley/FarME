@@ -8,19 +8,14 @@ import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { MapPin, Search, SlidersHorizontal, ChevronUp, History, Loader2, AlertTriangle } from 'lucide-react';
 import FarmCard from '@/components/farm-card';
-import placeholderImageData from '@/lib/placeholder-images.json';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { getFarms } from '@/lib/data';
 import type { Farm } from '@/lib/types';
 import { useEffect, useState } from 'react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useAuth } from '@/hooks/use-auth';
-import { useToast } from '@/hooks/use-toast';
 
 export default function Home() {
-  const mapImage = placeholderImageData.placeholderImages.find(p => p.id === 'map-background');
   const { user } = useAuth();
-  const { toast } = useToast();
   const [farms, setFarms] = useState<Farm[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -45,16 +40,14 @@ export default function Home() {
   return (
     <div className="relative w-full h-full overflow-hidden">
       <div className="absolute inset-0 z-0">
-        {mapImage && (
-          <Image
-            src={mapImage.imageUrl}
-            alt={mapImage.description}
-            data-ai-hint={mapImage.imageHint}
-            fill
-            className="object-cover"
-            priority
-          />
-        )}
+        <Image
+          src="https://images.unsplash.com/photo-1543487995-1c392b54c599?w=800&q=80"
+          alt="A stylized, light-colored map with a street grid."
+          data-ai-hint="map pattern"
+          fill
+          className="object-cover"
+          priority
+        />
         <div className="absolute inset-0 bg-white/20 dark:bg-black/30" />
       </div>
 
@@ -116,7 +109,7 @@ export default function Home() {
                 {(user ? farms : farms.slice(0, 3)).map(farm => (
                   <FarmCard key={farm.id} farm={farm} isGuest={!user} />
                 ))}
-                {!user && (
+                {!user && farms.length > 0 && (
                   <div className="p-4 text-center bg-muted/50 rounded-lg">
                     <h3 className="font-semibold">Want to see more?</h3>
                     <p className="text-sm text-muted-foreground mb-4">Create an account to view all local farms and unlock exclusive features.</p>
