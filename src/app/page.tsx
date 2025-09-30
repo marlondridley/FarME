@@ -43,7 +43,6 @@ export default function Home() {
   useEffect(() => {
     const fetchFarms = async (latitude: number, longitude: number) => {
       setLoading(true);
-      setLocationError(null);
       try {
         const fetchedFarms = await getFarms({ y: latitude, x: longitude, radius: 50 });
         setFarms(fetchedFarms);
@@ -59,6 +58,7 @@ export default function Home() {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           (position) => {
+            setLocationError(null);
             fetchFarms(position.coords.latitude, position.coords.longitude);
           },
           (error) => {
@@ -135,12 +135,7 @@ export default function Home() {
             <SheetTitle className="text-center text-xl">Farms & Markets Near You</SheetTitle>
           </SheetHeader>
           <div className="flex-grow overflow-auto p-4 space-y-4 -mx-4">
-            {loading ? (
-                <div className="flex flex-col items-center justify-center h-full text-center">
-                    <Loader2 className="w-8 h-8 animate-spin text-muted-foreground mb-4" />
-                    <p className="text-muted-foreground">Finding farms near you...</p>
-                </div>
-            ) : locationError && farms.length > 0 ? (
+            {locationError && (
                  <Alert variant="default" className="bg-yellow-100/10 border-yellow-500/30">
                   <AlertTriangle className="h-4 w-4 !text-yellow-500" />
                   <AlertTitle>Location Notice</AlertTitle>
@@ -148,19 +143,25 @@ export default function Home() {
                     {locationError}
                   </AlertDescription>
                 </Alert>
-            ) : null }
-            
-            {!loading && farmsToShow.length > 0 ? (
+            )}
+
+            {loading ? (
+                <div className="flex flex-col items-center justify-center h-full text-center">
+                    <Loader2 className="w-8 h-8 animate-spin text-muted-foreground mb-4" />
+                    <p className="text-muted-foreground">Finding farms near you...</p>
+                </div>
+            ) : farmsToShow.length > 0 ? (
                 farmsToShow.map(farm => (
                   <FarmCard key={farm.id} farm={farm} isGuest={!user} />
                 ))
-            ) : !loading && (
+            ) : (
                 <div className="flex flex-col items-center justify-center h-full text-center">
                     <MapPin className="w-12 h-12 text-muted-foreground/50 mb-4" />
                     <h3 className="text-lg font-semibold">No Farms Found</h3>
-                    <p className="text-muted-foreground">We couldn't find any farms in your area.</p>
+                    <p className="text-muted-foreground">We couldn't find any farms in this area.</p>
                 </div>
             )}
+            
             {!user && !loading && (
               <div className="p-4 text-center bg-muted/50 rounded-lg">
                 <h3 className="font-semibold">Want to see more?</h3>
