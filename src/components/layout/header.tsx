@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Leaf, Tractor, User } from 'lucide-react';
+import { Leaf } from 'lucide-react';
 import { Button } from '../ui/button';
 
 export default function Header() {
@@ -11,22 +11,11 @@ export default function Header() {
           <span className="font-bold text-lg">FarmFinder</span>
         </Link>
         <nav className="flex items-center gap-2 sm:gap-4">
-          <Link href="/dashboard" className='hidden sm:block'>
-            <Button variant="ghost" className="flex items-center gap-2">
-              <Tractor className="w-5 h-5" />
-              <span>Farmer Dashboard</span>
+          <Link href="/signup">
+            <Button variant="secondary">
+              Sign Up
             </Button>
           </Link>
-          <Link href="/dashboard" className='sm:hidden'>
-            <Button variant="ghost" size="icon">
-              <Tractor className="w-5 h-5" />
-              <span className='sr-only'>Farmer Dashboard</span>
-            </Button>
-          </Link>
-          <Button variant="secondary" className='rounded-full'>
-            <User className="w-5 h-5" />
-            <span className="sr-only">Profile</span>
-          </Button>
         </nav>
       </div>
     </header>
