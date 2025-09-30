@@ -91,18 +91,20 @@ export default function Home() {
 
   return (
     <div className="relative w-full h-[calc(100vh-4rem)] overflow-hidden">
-      {mapImage && (
-        <Image
-          src={mapImage.imageUrl}
-          alt={mapImage.description}
-          data-ai-hint={mapImage.imageHint}
-          fill
-          className="object-cover"
-          priority
-        />
-      )}
+      <div className="absolute inset-0 z-0">
+        {mapImage && (
+          <Image
+            src={mapImage.imageUrl}
+            alt={mapImage.description}
+            data-ai-hint={mapImage.imageHint}
+            fill
+            className="object-cover"
+            priority
+          />
+        )}
+        <div className="absolute inset-0 bg-white/20 dark:bg-black/30" />
+      </div>
 
-      <div className="absolute inset-0 bg-white/20 dark:bg-black/30" />
 
       <div className="absolute top-4 left-1/2 -translate-x-1/2 w-full max-w-lg px-4 z-20">
         <div className="relative">
