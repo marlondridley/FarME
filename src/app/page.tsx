@@ -17,7 +17,7 @@ const MapPinButton = ({ top, left, name, farmId }: { top: string, left: string, 
       <Tooltip>
         <TooltipTrigger asChild>
           <Button variant="secondary" size="icon" className="rounded-full w-10 h-10 shadow-md border-2 border-white">
-            <MapPin className="w-5 h-5 text-accent fill-accent" />
+            <MapPin className="w-5 h-5 text-primary fill-primary" />
           </Button>
         </TooltipTrigger>
         <TooltipContent>
@@ -46,17 +46,17 @@ export default function Home() {
       )}
 
       {/* Map Overlay for slight darkness */}
-      <div className="absolute inset-0 bg-black/10" />
+      <div className="absolute inset-0 bg-black/50" />
 
       {/* Top Search/Filter Bar */}
       <div className="absolute top-4 left-1/2 -translate-x-1/2 w-full max-w-2xl px-4 z-10">
-        <Card className="bg-background/80 backdrop-blur-sm shadow-lg p-2 flex items-center gap-2">
+        <Card className="bg-background/80 backdrop-blur-sm shadow-lg p-2 flex items-center gap-2 rounded-full">
           <div className="relative flex-grow">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-            <Input placeholder="Search for strawberries, honey, eggs..." className="pl-10 bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0" />
+            <Input placeholder="Search for strawberries, honey, eggs..." className="pl-10 bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 rounded-full" />
           </div>
           <Select>
-            <SelectTrigger className="w-[120px] shrink-0">
+            <SelectTrigger className="w-[120px] shrink-0 border-0 bg-secondary rounded-full">
               <SelectValue placeholder="Radius" />
             </SelectTrigger>
             <SelectContent>
@@ -65,7 +65,7 @@ export default function Home() {
               <SelectItem value="25">25 km</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="ghost" size="icon">
+          <Button variant="secondary" size="icon" className="rounded-full">
             <SlidersHorizontal className="h-5 w-5" />
           </Button>
         </Card>
@@ -82,13 +82,13 @@ export default function Home() {
         <SheetTrigger asChild>
           <Button
             className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 shadow-lg rounded-full h-12 px-6"
-            variant="secondary"
+            variant="default"
           >
             <ChevronUp className="mr-2 h-5 w-5" />
             Show Nearby Farms
           </Button>
         </SheetTrigger>
-        <SheetContent side="bottom" className="h-[75vh] flex flex-col rounded-t-lg">
+        <SheetContent side="bottom" className="h-[75vh] flex flex-col rounded-t-lg bg-background border-t">
           <SheetHeader>
             <SheetTitle className="text-center text-xl">Farms & Markets Near You</SheetTitle>
           </SheetHeader>
