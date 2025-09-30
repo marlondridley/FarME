@@ -38,7 +38,7 @@ const MapPinButton = ({ top, left, name, farmId }: { top: string, left: string, 
 
 
 export default function Home() {
-  const mapImage = placeholderImageData.find(p => p.id === 'map-background');
+  const mapImage = placeholderImageData.placeholderImages.find(p => p.id === 'map-background');
   const { user } = useAuth();
   const { toast } = useToast();
   const [farms, setFarms] = useState<Farm[]>([]);
