@@ -4,11 +4,12 @@ import { getAuth } from 'firebase/auth';
 import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from 'firebase/firestore';
 
 const firebaseConfig = {
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
+  "projectId": "studio-9207851391-c6f6b",
+  "appId": "1:628192282219:web:cab1a173f1589e5e94532e",
+  "apiKey": "AIzaSyCOBvOwjV023DgWRZ9ksqNguJhZQEMaF5k",
+  "authDomain": "studio-9207851391-c6f6b.firebaseapp.com",
+  "messagingSenderId": "628192282219",
+  "databaseURL": "https://studio-9207851391-c6f6b.firebaseio.com"
 };
 
 // Initialize Firebase
