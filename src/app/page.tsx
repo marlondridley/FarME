@@ -1,6 +1,8 @@
+
 "use client";
 
 import Image from 'next/image';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
@@ -12,6 +14,7 @@ import { getFarms } from '@/lib/data';
 import type { Farm } from '@/lib/types';
 import { useEffect, useState } from 'react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { useAuth } from '@/hooks/use-auth';
 
 const MapPinButton = ({ top, left, name, farmId }: { top: string, left: string, name: string, farmId: string }) => (
   <div className="absolute z-10" style={{ top, left, transform: 'translate(-50%, -50%)' }}>
@@ -31,7 +34,8 @@ const MapPinButton = ({ top, left, name, farmId }: { top: string, left: string, 
 );
 
 export default function Home() {
-  const mapImage = placeholderImages.find(p => p.id === 'map-background-light');
+  const mapImage = placeholderImages.find(p => p.id === 'map-background');
+  const { user } = useAuth();
   const [farms, setFarms] = useState<Farm[]>([]);
   const [loading, setLoading] = useState(true);
   const [locationError, setLocationError] = useState<string | null>(null);
@@ -73,6 +77,8 @@ export default function Home() {
 
     getLocation();
   }, []);
+
+  const farmsToShow = user ? farms : farms.slice(0, 3);
 
   return (
     <div className="relative w-full h-[calc(100vh-4rem)] overflow-hidden">
@@ -144,9 +150,9 @@ export default function Home() {
                 </Alert>
             ) : null }
             
-            {!loading && farms.length > 0 ? (
-                farms.map(farm => (
-                  <FarmCard key={farm.id} farm={farm} />
+            {!loading && farmsToShow.length > 0 ? (
+                farmsToShow.map(farm => (
+                  <FarmCard key={farm.id} farm={farm} isGuest={!user} />
                 ))
             ) : !loading && (
                 <div className="flex flex-col items-center justify-center h-full text-center">
@@ -154,6 +160,15 @@ export default function Home() {
                     <h3 className="text-lg font-semibold">No Farms Found</h3>
                     <p className="text-muted-foreground">We couldn't find any farms in your area.</p>
                 </div>
+            )}
+            {!user && !loading && (
+              <div className="p-4 text-center bg-muted/50 rounded-lg">
+                <h3 className="font-semibold">Want to see more?</h3>
+                <p className="text-sm text-muted-foreground mb-4">Create an account to view all local farms and unlock exclusive features.</p>
+                <Button asChild>
+                  <Link href="/signup">Sign Up Now</Link>
+                </Button>
+              </div>
             )}
           </div>
         </SheetContent>
