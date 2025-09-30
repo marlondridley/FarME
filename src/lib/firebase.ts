@@ -4,12 +4,12 @@ import { getAuth } from 'firebase/auth';
 import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from 'firebase/firestore';
 
 const firebaseConfig = {
-  "projectId": "studio-9207851391-c6f6b",
-  "appId": "1:628192282219:web:cab1a173f1589e5e94532e",
-  "apiKey": "AIzaSyCOBvOwjV023DgWRZ9ksqNguJhZQEMaF5k",
-  "authDomain": "studio-9207851391-c6f6b.firebaseapp.com",
-  "messagingSenderId": "628192282219",
-  "databaseURL": "https://studio-9207851391-c6f6b.firebaseio.com"
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
 };
 
 // Initialize Firebase
@@ -17,7 +17,6 @@ const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
 
 // Initialize Firestore with offline persistence.
-// Using initializeFirestore is the modern way and handles cases where Firestore was already initialized.
 const db = initializeFirestore(app, {
   localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
 });
