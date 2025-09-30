@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -62,6 +63,8 @@ const Carousel = React.forwardRef<
       {
         ...opts,
         axis: orientation === "horizontal" ? "x" : "y",
+        watchDrag: (emblaApi) => emblaApi.pointerDown() && !emblaApi.scrollTrigger.getEngine().isScrolling(),
+        watchWheel: true,
       },
       plugins
     )
@@ -97,6 +100,32 @@ const Carousel = React.forwardRef<
       },
       [scrollPrev, scrollNext]
     )
+
+    React.useEffect(() => {
+      if (!api) {
+        return;
+      }
+  
+      const onWheel = (event: WheelEvent) => {
+        // We only want to prevent vertical scrolling if we are scrolling horizontally
+        if (api.options.axis === 'x' && event.deltaY !== 0) {
+          // Noop, let the browser handle it
+        }
+      };
+  
+      const wheelGestures = api.internalEngine().wheelGestures;
+      wheelGestures.events.map((eventName, index) => {
+        const target = wheelGestures.target[index];
+        target.addEventListener(eventName, onWheel, { passive: true });
+      });
+  
+      return () => {
+        wheelGestures.events.map((eventName, index) => {
+          const target = wheelGestures.target[index];
+          target.removeEventListener(eventName, onWheel);
+        });
+      };
+    }, [api]);
 
     React.useEffect(() => {
       if (!api || !setApi) {
@@ -260,3 +289,5 @@ export {
   CarouselPrevious,
   CarouselNext,
 }
+
+    
