@@ -17,6 +17,7 @@ import React from 'react';
 import { processOrder } from '@/ai/flows/process-order-flow';
 
 export default function OrderPage({ params }: { params: { id: string } }) {
+  const { id: farmId } = params;
   const router = useRouter();
   const searchParams = useSearchParams();
   const productId = searchParams.get('product');
@@ -25,7 +26,7 @@ export default function OrderPage({ params }: { params: { id: string } }) {
   const [loading, setLoading] = React.useState(false);
 
 
-  const farm = farms.find(f => f.id === params.id);
+  const farm = farms.find(f => f.id === farmId);
   const product = allProducts.find(p => p.id === productId);
 
   if (!farm || !product) {

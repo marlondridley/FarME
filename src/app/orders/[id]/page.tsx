@@ -12,12 +12,13 @@ const timelineEvents = [
 ];
 
 export default function OrderTrackingPage({ params }: { params: { id: string } }) {
+  const { id: orderId } = params;
   return (
     <div className="container mx-auto py-8 px-4 max-w-2xl">
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl">Track Your Order</CardTitle>
-          <CardDescription>Order ID: #{params.id.replace('order_', '')}</CardDescription>
+          <CardDescription>Order ID: #{orderId.replace('order_', '')}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="relative pl-6 space-y-8 before:absolute before:inset-y-0 before:w-0.5 before:bg-border before:left-11">
