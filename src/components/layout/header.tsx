@@ -8,7 +8,7 @@ export default function Header() {
       <div className="container flex h-16 max-w-screen-2xl items-center">
         <Link href="/" className="flex items-center gap-2 mr-auto">
           <Leaf className="w-7 h-7 text-primary" />
-          <span className="font-bold text-lg font-headline">FarmFinder</span>
+          <span className="font-bold text-lg">FarmFinder</span>
         </Link>
         <nav className="flex items-center gap-2 sm:gap-4">
           <Link href="/dashboard" className='hidden sm:block'>

@@ -3,67 +3,91 @@
     {
       "id": "map-background",
       "description": "A stylized, light-colored map with a street grid.",
-      "imageUrl": "https://images.unsplash.com/photo-1543487995-1c392b54c599?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxsaWdodCUyMG1hcCUyMHBhdHRlcm58ZW58MHx8fHwxNzU5MjgxNDUxfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1543487995-1c392b54c599?w=800&q=80",
       "imageHint": "map pattern"
     },
     {
       "id": "farm-logo-1",
       "description": "A vibrant green valley with a small farm in the distance.",
-      "imageUrl": "https://images.unsplash.com/photo-1720221199264-d9ba5aed472d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxmYXJtJTIwdmFsbGV5fGVufDB8fHx8MTc1OTIxMjYzOHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1720221199264-d9ba5aed472d?w=400&h=400&fit=crop&q=80",
       "imageHint": "farm valley"
     },
     {
       "id": "farm-logo-2",
       "description": "Close up of eggs in a basket.",
-      "imageUrl": "https://images.unsplash.com/photo-1680613142627-96b32c19b80e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxlZ2dzJTIwYmFza2V0fGVufDB8fHx8MTc1OTI0NDAzOXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1680613142627-96b32c19b80e?w=400&h=400&fit=crop&q=80",
       "imageHint": "eggs basket"
     },
     {
       "id": "farm-logo-3",
       "description": "A field of sunflowers under a blue sky.",
-      "imageUrl": "https://images.unsplash.com/photo-1595756035507-995aad5d5de3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxzdW5mbG93ZXIlMjBmaWVsZHxlbnwwfHx8fDE3NTkxNjA4MDJ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1595756035507-995aad5d5de3?w=400&h=400&fit=crop&q=80",
       "imageHint": "sunflower field"
     },
     {
       "id": "farm-logo-4",
       "description": "A wooden table with various fresh vegetables.",
-      "imageUrl": "https://images.unsplash.com/photo-1706983135160-baf7049cc7f9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHx2ZWdldGFibGVzJTIwbWFya2V0fGVufDB8fHx8MTc1OTI0NDAzOHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1706983135160-baf7049cc7f9?w=400&h=400&fit=crop&q=80",
       "imageHint": "vegetables market"
+    },
+    {
+      "id": "farm-hero-1",
+      "description": "A beautiful lush green farm with rolling hills",
+      "imageUrl": "https://images.unsplash.com/photo-1523741543314-6e14434b97a2?w=1200&h=400&fit=crop&q=80",
+      "imageHint": "farm landscape"
+    },
+    {
+      "id": "farm-hero-2",
+      "description": "A chicken coop with chickens walking around",
+      "imageUrl": "https://images.unsplash.com/photo-1572205842623-4a1793791550?w=1200&h=400&fit=crop&q=80",
+      "imageHint": "chicken coop"
+    },
+    {
+      "id": "farm-hero-3",
+      "description": "A field of wildflowers in bloom.",
+      "imageUrl": "https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=1200&h=400&fit=crop&q=80",
+      "imageHint": "wildflower field"
+    },
+    {
+      "id": "farm-hero-4",
+      "description": "A farmers market stall with fresh produce.",
+      "imageUrl": "https://images.unsplash.com/photo-1589923188902-15a1e24a43a7?w=1200&h=400&fit=crop&q=80",
+      "imageHint": "farmers market"
     },
     {
       "id": "product-tomatoes",
       "description": "A bunch of ripe red tomatoes.",
-      "imageUrl": "https://images.unsplash.com/photo-1683008952458-dc02ac67f382?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHx0b21hdG9lcyUyMGZyZXNofGVufDB8fHx8MTc1OTI0NDAzOXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1683008952458-dc02ac67f382?w=400&h=300&fit=crop&q=80",
       "imageHint": "tomatoes fresh"
     },
     {
       "id": "product-eggs",
       "description": "Brown and white eggs in a carton.",
-      "imageUrl": "https://images.unsplash.com/photo-1587900433728-10ee22cd624c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxlZ2dzJTIwY2FydG9ufGVufDB8fHx8MTc1OTE2MjE1Nnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1587900433728-10ee22cd624c?w=400&h=300&fit=crop&q=80",
       "imageHint": "eggs carton"
     },
     {
       "id": "product-honey",
       "description": "A jar of golden honey with a dipper.",
-      "imageUrl": "https://images.unsplash.com/photo-1633434644309-cc8d4f0c207d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8aG9uZXklMjBqYXJ8ZW58MHx8fHwxNzU5MTIyMjc1fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1633434644309-cc8d4f0c207d?w=400&h=300&fit=crop&q=80",
       "imageHint": "honey jar"
     },
     {
       "id": "product-lettuce",
       "description": "A head of fresh green lettuce.",
-      "imageUrl": "https://images.unsplash.com/photo-1736757614152-d500988741db?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8bGV0dHVjZSUyMGZyZXNofGVufDB8fHx8MTc1OTI0NDQwMHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1736757614152-d500988741db?w=400&h=300&fit=crop&q=80",
       "imageHint": "lettuce fresh"
     },
     {
       "id": "product-strawberries",
       "description": "A basket of fresh strawberries.",
-      "imageUrl": "https://images.unsplash.com/photo-1719204603268-fb77d1bb59a4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxzdHJhd2JlcnJpZXMlMjBiYXNrZXR8ZW58MHx8fHwxNzU5MjQ0MDM5fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1719204603268-fb77d1bb59a4?w=400&h=300&fit=crop&q=80",
       "imageHint": "strawberries basket"
     },
     {
       "id": "product-zucchini",
       "description": "A few green zucchinis on a wooden surface.",
-      "imageUrl": "https://images.unsplash.com/photo-1687199126774-bc777f6d7c6e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHx6dWNjaGluaSUyMGZyZXNofGVufDB8fHx8MTc1OTI0NDAzOXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1687199126774-bc777f6d7c6e?w=400&h=300&fit=crop&q=80",
       "imageHint": "zucchini fresh"
     }
   ]

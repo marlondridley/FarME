@@ -12,12 +12,16 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { placeholderImages } from '@/lib/placeholder-images';
+import { ArrowLeft, Minus, Plus } from 'lucide-react';
+import React from 'react';
 
 export default function OrderPage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const productId = searchParams.get('product');
   const { toast } = useToast();
+  const [quantity, setQuantity] = React.useState(1);
+
 
   const farm = farms.find(f => f.id === params.id);
   const product = allProducts.find(p => p.id === productId);
@@ -33,74 +37,73 @@ export default function OrderPage({ params }: { params: { id: string } }) {
       </div>
     );
   }
-
+  
   const productImage = placeholderImages.find(p => product.imageUrl.includes(p.id));
+  const total = product.price * quantity;
 
   const handlePlaceOrder = () => {
-    // Simulate placing order
     toast({
       title: "Order Placed!",
-      description: "Your order has been sent to the farm.",
+      description: `Your order for ${quantity}x ${product.name} has been sent to ${farm.name}.`,
     });
-    // Generate a unique order ID for the prototype
     const orderId = `order_${new Date().getTime()}`;
     router.push(`/orders/${orderId}`);
   };
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-4xl">
-      <h1 className="text-3xl font-bold font-headline mb-8">Checkout</h1>
-      <div className="grid md:grid-cols-2 gap-12">
-        <div className='space-y-6'>
-          <h2 className="text-xl font-semibold mb-4">Your Order</h2>
-          <Card>
-            <CardContent className="p-4 flex items-center gap-4">
-              <div className="relative w-20 h-20 rounded-md overflow-hidden shrink-0">
-                <Image src={product.imageUrl} alt={product.name} fill className="object-cover" data-ai-hint={productImage?.imageHint || "product"} />
-              </div>
-              <div>
-                <h3 className="font-bold">{product.name}</h3>
-                <p className="text-muted-foreground">From {farm.name}</p>
-                <p className="font-semibold text-accent text-lg">${product.price.toFixed(2)}</p>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Separator className="my-6" />
+    <div className="min-h-[calc(100vh-4rem)] bg-card flex flex-col">
+       <div className="flex-grow container mx-auto py-8 px-4 max-w-lg">
+        <Link href={`/farm/${farm.id}`} className="mb-6 inline-block">
+          <Button variant="ghost" size="icon" className="h-10 w-10">
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+        </Link>
+        <div className="space-y-6">
+          <div className="relative w-full h-48 rounded-lg overflow-hidden">
+            <Image src={product.imageUrl} alt={product.name} fill className="object-cover" data-ai-hint={productImage?.imageHint || "product"} />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold">{product.name}</h1>
+            <p className="text-muted-foreground mt-1">{product.description}</p>
+          </div>
 
-          <div className="flex justify-between font-semibold text-lg">
-            <span>Total</span>
-            <span>${product.price.toFixed(2)}</span>
+          <Separator />
+          
+           <div>
+            <h2 className="text-lg font-semibold mb-2">Delivery Options</h2>
+             <RadioGroup defaultValue="standard" className="space-y-3">
+              <Label htmlFor="standard" className="flex items-start p-4 bg-background rounded-md cursor-pointer has-[:checked]:bg-primary/10 has-[:checked]:border-primary border-2 border-transparent transition-colors">
+                <RadioGroupItem value="standard" id="standard" className="mt-1" />
+                <div className="ml-4">
+                  <span className="font-semibold">Standard Delivery</span>
+                  <p className="text-sm text-muted-foreground">A general selection of items, packed and shipped with care.</p>
+                </div>
+              </Label>
+              <Label htmlFor="premium" className="flex items-start p-4 bg-background rounded-md cursor-pointer has-[:checked]:bg-primary/10 has-[:checked]:border-primary border-2 border-transparent transition-colors">
+                <RadioGroupItem value="premium" id="premium" />
+                <div className="ml-4">
+                  <span className="font-semibold">Premium Hand-Picked</span>
+                  <p className="text-sm text-muted-foreground">The farmer will personally select the best quality items for your order.</p>
+                </div>
+              </Label>
+            </RadioGroup>
           </div>
         </div>
-
-        <div className='space-y-6'>
-          <h2 className="text-xl font-semibold mb-4">Delivery Options</h2>
-          <RadioGroup defaultValue="standard" className="space-y-4">
-            <Label htmlFor="standard" className="flex items-start p-4 border rounded-md cursor-pointer has-[:checked]:bg-primary/10 has-[:checked]:border-primary transition-colors">
-              <RadioGroupItem value="standard" id="standard" className="mt-1" />
-              <div className="ml-4">
-                <span className="font-semibold">Standard Delivery</span>
-                <p className="text-sm text-muted-foreground">A general selection of items, packed and shipped with care.</p>
-              </div>
-            </Label>
-            <Label htmlFor="premium" className="flex items-start p-4 border rounded-md cursor-pointer has-[:checked]:bg-primary/10 has-[:checked]:border-primary transition-colors">
-              <RadioGroupItem value="premium" id="premium" />
-              <div className="ml-4">
-                <span className="font-semibold">Premium Hand-Picked</span>
-                <p className="text-sm text-muted-foreground">The farmer will personally select the best quality items for your order.</p>
-              </div>
-            </Label>
-          </RadioGroup>
-          
-          <Button onClick={handlePlaceOrder} className="w-full mt-8" size="lg">
-            Place Order
+      </div>
+      <div className="sticky bottom-0 bg-card border-t p-4">
+         <div className="container mx-auto max-w-lg flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+                <Button variant="outline" size="icon" className="h-10 w-10 rounded-full" onClick={() => setQuantity(q => Math.max(1, q-1))} disabled={quantity <= 1}>
+                    <Minus className="w-4 h-4" />
+                </Button>
+                <span className="text-xl font-bold w-8 text-center">{quantity}</span>
+                 <Button variant="outline" size="icon" className="h-10 w-10 rounded-full" onClick={() => setQuantity(q => q + 1)}>
+                    <Plus className="w-4 h-4" />
+                </Button>
+            </div>
+          <Button onClick={handlePlaceOrder} className="w-full" size="lg">
+            Add to Order - ${total.toFixed(2)}
           </Button>
-          <Link href={`/farm/${farm.id}`}>
-            <Button variant="outline" className="w-full mt-2">
-              Back to Farm
-            </Button>
-          </Link>
         </div>
       </div>
     </div>

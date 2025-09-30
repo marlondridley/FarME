@@ -12,10 +12,10 @@ export default function FarmCard({ farm }: { farm: Farm }) {
   const TypeIcon = farm.type === 'farm' ? Building : farm.type === 'market' ? Tent : MapPin;
 
   return (
-    <Link href={`/farm/${farm.id}`} className="block">
-      <Card className="hover:shadow-md transition-shadow hover:border-primary/50">
-        <CardContent className="p-4 flex gap-4 items-center">
-          <div className="relative w-24 h-24 rounded-md overflow-hidden shrink-0">
+    <Link href={`/farm/${farm.id}`} className="block px-4">
+      <Card className="bg-transparent border-0 border-b rounded-none shadow-none hover:bg-muted/30">
+        <CardContent className="p-4 flex gap-4 items-start">
+          <div className="relative w-24 h-24 rounded-lg overflow-hidden shrink-0">
             <Image 
               src={farm.logoUrl} 
               alt={farm.name} 
@@ -25,22 +25,22 @@ export default function FarmCard({ farm }: { farm: Farm }) {
             />
           </div>
           <div className="flex-grow">
-            <h3 className="font-bold text-lg">{farm.name}</h3>
-            <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
+            <h3 className="font-semibold text-lg">{farm.name}</h3>
+            <p className='text-sm text-muted-foreground mt-1 line-clamp-2'>{farm.bio}</p>
+            <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2">
               <div className='flex items-center gap-1'>
-                <MapPin className="w-4 h-4" />
-                <span>{farm.distance} km away</span>
-              </div>
-              <div className="flex items-center gap-1">
                 <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
                 <span>{farm.rating.toFixed(1)}</span>
               </div>
+              <div className='flex items-center gap-1'>
+                <MapPin className="w-4 h-4" />
+                <span>{farm.distance} km</span>
+              </div>
+               <div className='flex items-center gap-1 capitalize'>
+                <TypeIcon className='w-4 h-4' />
+                <span>{farm.type}</span>
+              </div>
             </div>
-            <p className='text-sm text-muted-foreground mt-2 line-clamp-2'>{farm.bio}</p>
-          </div>
-          <div className='flex flex-col items-center gap-1 self-start'>
-            <TypeIcon className='w-6 h-6 text-accent' />
-            <Badge variant="outline" className='capitalize'>{farm.type}</Badge>
           </div>
         </CardContent>
       </Card>

@@ -2,6 +2,7 @@ export type Farm = {
   id: string;
   name: string;
   logoUrl: string;
+  heroUrl: string;
   bio: string;
   location: {
     lat: number;
