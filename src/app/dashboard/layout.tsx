@@ -1,12 +1,31 @@
+
+"use client";
+
 import Link from 'next/link';
 import { Home, Leaf, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/use-auth';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const { user, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+    }
+  }, [user, loading, router]);
+
+  if (loading || !user) {
+    return null; // Or a loading spinner
+  }
+
   return (
     <div className="flex min-h-[calc(100vh-4rem)]">
       <aside className="w-16 sm:w-64 bg-secondary/30 p-2 sm:p-4 border-r flex flex-col">

@@ -1,6 +1,8 @@
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Check } from 'lucide-react';
+import Link from 'next/link';
 
 const consumerFeatures = [
   "Access to all local farms and markets",
@@ -44,7 +46,9 @@ export default function SignupPage() {
                 </li>
               ))}
             </ul>
-             <Button size="lg" className="w-full mt-8">Sign Up as a Consumer</Button>
+             <Button size="lg" className="w-full mt-8" asChild>
+                <Link href="/register">Sign Up as a Consumer</Link>
+             </Button>
           </CardContent>
         </Card>
 
@@ -67,7 +71,9 @@ export default function SignupPage() {
                 </li>
               ))}
             </ul>
-            <Button size="lg" className="w-full mt-8">Sign Up as a Farmer</Button>
+            <Button size="lg" className="w-full mt-8" asChild>
+                <Link href="/register">Sign Up as a Farmer</Link>
+            </Button>
           </CardContent>
         </Card>
       </div>
