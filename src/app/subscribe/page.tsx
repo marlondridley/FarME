@@ -8,7 +8,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import { Loader2, Check } from 'lucide-react';
-import Purchases from '@revenuecat/purchases-js';
 
 const plans = {
   consumer: {
