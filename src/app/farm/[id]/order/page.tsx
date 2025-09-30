@@ -12,8 +12,9 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { placeholderImages } from '@/lib/placeholder-images';
-import { ArrowLeft, Minus, Plus } from 'lucide-react';
+import { ArrowLeft, Minus, Plus, Loader2 } from 'lucide-react';
 import React from 'react';
+import { processOrder } from '@/ai/flows/process-order-flow';
 
 export default function OrderPage({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -21,6 +22,7 @@ export default function OrderPage({ params }: { params: { id: string } }) {
   const productId = searchParams.get('product');
   const { toast } = useToast();
   const [quantity, setQuantity] = React.useState(1);
+  const [loading, setLoading] = React.useState(false);
 
 
   const farm = farms.find(f => f.id === params.id);
@@ -41,13 +43,36 @@ export default function OrderPage({ params }: { params: { id: string } }) {
   const productImage = placeholderImages.find(p => product.imageUrl.includes(p.id));
   const total = product.price * quantity;
 
-  const handlePlaceOrder = () => {
-    toast({
-      title: "Order Placed!",
-      description: `Your order for ${quantity}x ${product.name} has been sent to ${farm.name}.`,
-    });
-    const orderId = `order_${new Date().getTime()}`;
-    router.push(`/orders/${orderId}`);
+  const handlePlaceOrder = async () => {
+    setLoading(true);
+    try {
+      const result = await processOrder({
+        farmName: farm.name,
+        productName: product.name,
+        quantity: quantity,
+        total: total,
+      });
+
+      console.log("Farmer Notification:", result.farmerNotification);
+
+      toast({
+        title: "Order Placed!",
+        description: `Your order for ${quantity}x ${product.name} has been sent to ${farm.name}.`,
+      });
+      
+      const orderId = result.orderId.replace('ord_', 'order_');
+      router.push(`/orders/${orderId}`);
+
+    } catch (error) {
+      console.error("Order processing error:", error);
+      toast({
+        variant: "destructive",
+        title: "Order Failed",
+        description: "There was a problem placing your order. Please try again.",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -101,8 +126,15 @@ export default function OrderPage({ params }: { params: { id: string } }) {
                     <Plus className="w-4 h-4" />
                 </Button>
             </div>
-          <Button onClick={handlePlaceOrder} className="w-full" size="lg">
-            Add to Order - ${total.toFixed(2)}
+          <Button onClick={handlePlaceOrder} className="w-full" size="lg" disabled={loading}>
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Placing Order...
+              </>
+            ) : (
+              `Add to Order - $${total.toFixed(2)}`
+            )}
           </Button>
         </div>
       </div>
