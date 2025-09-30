@@ -49,11 +49,6 @@ export default function FarmPage({ params }: { params: { id: string } }) {
                 <div className="flex items-center gap-1">
                   <span>{farm.distance} km away</span>
                 </div>
-                <Separator orientation="vertical" className="h-4 bg-border" />
-                 <div className="flex items-center gap-1">
-                  <Info className="w-4 h-4" />
-                  <span>Info</span>
-                </div>
               </div>
             </div>
             <Button variant="outline" size="icon" className="rounded-full w-12 h-12 shrink-0">

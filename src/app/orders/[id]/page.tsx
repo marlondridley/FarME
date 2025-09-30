@@ -1,5 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Package, Send, ShoppingBasket, Truck } from 'lucide-react';
+import { Package, Send, ShoppingBasket, Truck, Wallet } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
@@ -8,6 +8,7 @@ const timelineEvents = [
   { icon: Package, title: 'Order Accepted', description: 'The farm is preparing your items.', status: 'completed' },
   { icon: Send, title: 'Order Shipped', description: 'Your order is on its way!', status: 'active' },
   { icon: Truck, title: 'Delivered', description: 'Your fresh produce has arrived.', status: 'pending' },
+  { icon: Wallet, title: 'Payment', description: 'Pay upon delivery or pickup.', status: 'pending'},
 ];
 
 export default function OrderTrackingPage({ params }: { params: { id: string } }) {

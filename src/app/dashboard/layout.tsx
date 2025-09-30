@@ -24,7 +24,7 @@ export default function DashboardLayout({
               <span className="hidden sm:inline">Crop Suggestions</span>
             </Button>
           </Link>
-          <Link href="#" passHref>
+          <Link href="/dashboard/settings" passHref>
             <Button variant="ghost" className="w-full justify-start gap-2">
               <Settings className="w-5 h-5" />
               <span className="hidden sm:inline">Settings</span>
