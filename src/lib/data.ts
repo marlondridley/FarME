@@ -1,3 +1,4 @@
+
 import type { Farm, Product } from './types';
 import { placeholderImages } from './placeholder-images';
 import { getUsdaFarms } from './usda';
@@ -104,30 +105,27 @@ export async function getFarms(options: {x: number, y: number, radius: number}):
 }
 
 export async function getFarmById(id: string): Promise<Farm | null> {
-    // In a real application, you would fetch this from your database.
-    // For now, we'll simulate it by creating a mock farm object.
-    // We can't use getFarms because that requires coordinates.
+    if (!id) return null;
+
+    // In a real app, you'd fetch from a DB. Here, we fetch from the API with a wide radius.
+    // This is inefficient but necessary for this demo architecture.
+    const allFarms = await getFarms({ y: 39.8283, x: -98.5795, radius: 5000 }); // Wide search
     
-    // Simple mock to ensure the page renders
-    if (id) {
-        const randomImageId = Math.floor(Math.random() * 4) + 1;
-        return {
-            id: id,
-            name: "The Bountiful Harvest",
-            bio: "Serving the community with fresh, organic produce for over 20 years. We believe in sustainable farming and healthy living.",
-            location: {
-                lat: 38.5816,
-                lng: -121.4944,
-                address: "Sacramento, CA",
-            },
-            products: ['heirloom-tomatoes', 'green-lettuce', 'fresh-strawberries', 'organic-zucchini'],
-            type: 'farm',
-            rating: 4.8,
-            distance: 12.5,
-            logoUrl: getImageUrl(`farm-logo-${randomImageId}`),
-            heroUrl: getImageUrl(`farm-hero-${randomImageId}`),
-        };
+    let farm = allFarms.find(f => f.id === id);
+
+    // If not found by the generated ID, try to find it by name as a fallback.
+    // This handles cases where the ID might be generated differently on separate loads.
+    if (!farm) {
+      const potentialName = id.replace(/-\d+$/, '').replace(/-/g, ' ');
+      farm = allFarms.find(f => f.name.toLowerCase().includes(potentialName));
     }
 
+    if (farm) {
+        // Enhance the found farm with a richer product list for the detail page.
+        farm.products = ['heirloom-tomatoes', 'green-lettuce', 'fresh-strawberries', 'organic-zucchini', 'free-range-eggs', 'wildflower-honey'];
+        return farm;
+    }
+
+    console.warn(`Could not find farm with id: ${id}. No fallback mock will be returned.`);
     return null;
 }
