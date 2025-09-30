@@ -1,7 +1,7 @@
 import type { USDAFarm, USDADirectory } from './types';
 
 const API_BASE_URL = 'https://www.usdalocalfoodportal.com/api/';
-const API_KEY = process.env.USDA_API_KEY;
+const API_KEY = process.env.NEXT_PUBLIC_USDA_API_KEY;
 
 const DIRECTORIES: USDADirectory[] = ['agritourism', 'csa', 'farmersmarket', 'foodhub', 'onfarmmarket'];
 
