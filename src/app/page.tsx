@@ -83,13 +83,6 @@ export default function Home() {
     getLocation();
   }, []);
   
-  const handleFeatureClick = (featureName: string) => {
-    toast({
-      title: "Coming Soon!",
-      description: `${featureName} functionality is not yet implemented.`,
-    });
-  };
-
   const farmsToShow = user ? farms : farms.slice(0, 3);
 
   return (
@@ -122,10 +115,10 @@ export default function Home() {
       </div>
       
       <div className="absolute top-4 right-4 z-20 flex gap-2">
-         <Button variant="secondary" size="icon" className="rounded-full h-14 w-14 shadow-md" onClick={() => handleFeatureClick('History')}>
+         <Button variant="secondary" size="icon" className="rounded-full h-14 w-14 shadow-md">
             <History className="h-6 w-6" />
         </Button>
-        <Button variant="secondary" size="icon" className="rounded-full h-14 w-14 shadow-md" onClick={() => handleFeatureClick('Filters')}>
+        <Button variant="secondary" size="icon" className="rounded-full h-14 w-14 shadow-md">
             <SlidersHorizontal className="h-6 w-6" />
         </Button>
       </div>
