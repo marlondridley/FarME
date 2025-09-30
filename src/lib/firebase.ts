@@ -8,6 +8,7 @@ const firebaseConfig = {
   appId: "1:628192282219:web:cab1a173f1589e5e94532e",
   apiKey: "AIzaSyCOBvOwjV023DgWRZ9ksqNguJhZQEMaF5k",
   authDomain: "studio-9207851391-c6f6b.firebaseapp.com",
+  databaseURL: "https://studio-9207851391-c6f6b.firebaseio.com",
   measurementId: "",
   messagingSenderId: "628192282219"
 };

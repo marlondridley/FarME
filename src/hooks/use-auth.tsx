@@ -32,13 +32,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             setUser({ ...firebaseUser, role: userDoc.data().role });
           } else {
             // This case can happen right after registration before the doc is created
-            // Or if there's an issue creating the doc.
+            // Or if there's an issue creating the doc. We'll set the user without a role
+            // and the role will be picked up on next refresh if available.
             setUser(firebaseUser); 
           }
         } catch (error) {
-          console.error("Error fetching user role, user might be offline", error);
+          console.error("Error fetching user role, user might be offline or doc doesn't exist yet", error);
           // Gracefully handle offline case by setting user without the role.
-          // The role will be populated later or on next reload when online.
           setUser(firebaseUser);
         }
       } else {
