@@ -2,8 +2,8 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
-import { doc, getDoc, getDocFromCache } from 'firebase/firestore';
+import { onAuthStateChanged, User as FirebaseUser, Unsubscribe } from 'firebase/auth';
+import { doc, getDoc, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { Loader2 } from 'lucide-react';
 
@@ -23,52 +23,47 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+    let unsubscribeRole: Unsubscribe | undefined;
+
+    const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
+      // If a role listener is active from a previous user, unsubscribe from it.
+      if (unsubscribeRole) {
+        unsubscribeRole();
+      }
+
       if (firebaseUser) {
         const userDocRef = doc(db, 'users', firebaseUser.uid);
-        try {
-          // Try fetching from the server first to get the most up-to-date user role.
-          const userDoc = await getDoc(userDocRef);
-          
-          if (userDoc.exists()) {
-            setUser({ ...firebaseUser, role: userDoc.data().role });
+        
+        // Use onSnapshot to listen for real-time updates and handle offline state.
+        unsubscribeRole = onSnapshot(userDocRef, (docSnap) => {
+          if (docSnap.exists()) {
+            setUser({ ...firebaseUser, role: docSnap.data().role });
           } else {
-             // If the doc doesn't exist on the server, check the cache.
-             // This can happen if the user is offline and the doc was created recently.
-            try {
-              const cachedDoc = await getDocFromCache(userDocRef);
-              if (cachedDoc.exists()) {
-                setUser({ ...firebaseUser, role: cachedDoc.data().role });
-              } else {
-                setUser(firebaseUser); // No role info available.
-              }
-            } catch (cacheError) {
-                console.error("Error fetching user from cache:", cacheError);
-                setUser(firebaseUser); // Fallback to user without role.
-            }
+            // Document doesn't exist, user has no role info yet.
+            setUser(firebaseUser);
           }
-        } catch (error) {
-          console.error("Error fetching user role, user might be offline or doc doesn't exist yet. Trying cache.", error);
-          // If server fails (e.g., offline), gracefully fall back to cache.
-          try {
-             const userDoc = await getDocFromCache(userDocRef);
-             if (userDoc.exists()) {
-                setUser({ ...firebaseUser, role: userDoc.data().role });
-             } else {
-                setUser(firebaseUser);
-             }
-          } catch (cacheError) {
-            console.error("Failed to get user from server or cache:", cacheError);
-            setUser(firebaseUser); // Fallback to user without role info.
-          }
-        }
+        }, (error) => {
+          console.error("Error with onSnapshot listener:", error);
+          // If there's an error, still provide the basic user object.
+          setUser(firebaseUser);
+        });
+
       } else {
+        // No user is signed in.
         setUser(null);
       }
+      
+      // Set loading to false only after the initial auth check is complete.
       setLoading(false);
     });
 
-    return () => unsubscribe();
+    // Cleanup both auth and Firestore listeners on unmount.
+    return () => {
+      unsubscribeAuth();
+      if (unsubscribeRole) {
+        unsubscribeRole();
+      }
+    };
   }, []);
 
   if (loading) {
@@ -80,7 +75,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading }}>
+    <AuthContext.Provider value={{ user, loading: false }}>
       {children}
     </AuthContext.Provider>
   );
