@@ -18,6 +18,7 @@ import { cn } from '@/lib/utils';
 import type { Farm } from '@/lib/types';
 
 export default function FarmPage({ params }: { params: { id: string } }) {
+  const { id } = params;
   const { user } = useAuth();
   const { toast } = useToast();
   const [isFavorited, setIsFavorited] = useState(false);
@@ -27,7 +28,7 @@ export default function FarmPage({ params }: { params: { id: string } }) {
   useEffect(() => {
     const fetchFarm = async () => {
       setLoading(true);
-      const fetchedFarm = await getFarmById(params.id);
+      const fetchedFarm = await getFarmById(id);
       if (fetchedFarm) {
         setFarm(fetchedFarm);
       } else {
@@ -37,7 +38,7 @@ export default function FarmPage({ params }: { params: { id: string } }) {
     };
 
     fetchFarm();
-  }, [params.id]);
+  }, [id]);
 
   if (loading) {
     return (
