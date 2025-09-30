@@ -1,10 +1,36 @@
+
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
 
 export default function DashboardPage() {
+  const { toast } = useToast();
+  const [location, setLocation] = useState("");
+  const [updates, setUpdates] = useState("");
+
+  const handlePostUpdate = () => {
+    if (!location && !updates) {
+      toast({
+        variant: "destructive",
+        title: "Empty Update",
+        description: "Please enter a location or product update.",
+      });
+      return;
+    }
+    toast({
+      title: "Status Updated!",
+      description: "Your customers have been notified.",
+    });
+    setLocation("");
+    setUpdates("");
+  };
+
   return (
     <div className="space-y-8">
       <h1 className="text-3xl font-bold font-headline">Dashboard</h1>
@@ -17,13 +43,23 @@ export default function DashboardPage() {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="location">Today's Location</Label>
-            <Input id="location" placeholder="e.g., At Downtown Market 9–2PM" />
+            <Input 
+              id="location" 
+              placeholder="e.g., At Downtown Market 9–2PM" 
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="updates">Product Updates</Label>
-            <Textarea id="updates" placeholder="e.g., Fresh strawberries are in! Limited supply." />
+            <Textarea 
+              id="updates" 
+              placeholder="e.g., Fresh strawberries are in! Limited supply." 
+              value={updates}
+              onChange={(e) => setUpdates(e.target.value)}
+            />
           </div>
-          <Button>Post Update</Button>
+          <Button onClick={handlePostUpdate}>Post Update</Button>
         </CardContent>
       </Card>
 

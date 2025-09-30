@@ -15,6 +15,7 @@ import type { Farm } from '@/lib/types';
 import { useEffect, useState } from 'react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useAuth } from '@/hooks/use-auth';
+import { useToast } from '@/hooks/use-toast';
 
 const MapPinButton = ({ top, left, name, farmId }: { top: string, left: string, name: string, farmId: string }) => (
   <div className="absolute z-10" style={{ top, left, transform: 'translate(-50%, -50%)' }}>
@@ -36,6 +37,7 @@ const MapPinButton = ({ top, left, name, farmId }: { top: string, left: string, 
 export default function Home() {
   const mapImage = placeholderImageData.find(p => p.id === 'map-background');
   const { user } = useAuth();
+  const { toast } = useToast();
   const [farms, setFarms] = useState<Farm[]>([]);
   const [loading, setLoading] = useState(true);
   const [locationError, setLocationError] = useState<string | null>(null);
@@ -77,6 +79,13 @@ export default function Home() {
 
     getLocation();
   }, []);
+  
+  const handleFeatureClick = (featureName: string) => {
+    toast({
+      title: "Coming Soon!",
+      description: `${featureName} functionality is not yet implemented.`,
+    });
+  };
 
   const farmsToShow = user ? farms : farms.slice(0, 3);
 
@@ -106,10 +115,10 @@ export default function Home() {
       </div>
       
       <div className="absolute top-4 right-4 z-20 flex gap-2">
-         <Button variant="secondary" size="icon" className="rounded-full h-14 w-14 shadow-md">
+         <Button variant="secondary" size="icon" className="rounded-full h-14 w-14 shadow-md" onClick={() => handleFeatureClick('History')}>
             <History className="h-6 w-6" />
         </Button>
-        <Button variant="secondary" size="icon" className="rounded-full h-14 w-14 shadow-md">
+        <Button variant="secondary" size="icon" className="rounded-full h-14 w-14 shadow-md" onClick={() => handleFeatureClick('Filters')}>
             <SlidersHorizontal className="h-6 w-6" />
         </Button>
       </div>
@@ -133,6 +142,7 @@ export default function Home() {
            <div className="absolute top-3 left-1/2 -translate-x-1/2 h-1.5 w-12 rounded-full bg-muted-foreground/50" />
           <SheetHeader className="pt-4">
             <SheetTitle className="text-center text-xl">Farms & Markets Near You</SheetTitle>
+
           </SheetHeader>
           <div className="flex-grow overflow-auto p-4 space-y-4 -mx-4">
             {locationError && (
