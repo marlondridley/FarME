@@ -16,17 +16,10 @@ const firebaseConfig = {
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
 
-// Initialize Firestore with offline persistence
-let db;
-try {
-  db = initializeFirestore(app, {
-    localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
-  });
-} catch (e) {
-  console.error("Could not initialize Firestore with offline persistence", e);
-  // Fallback to default firestore instance if persistence fails
-  db = getFirestore(app);
-}
-
+// Initialize Firestore with offline persistence.
+// Using initializeFirestore is the modern way and handles cases where Firestore was already initialized.
+const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
+});
 
 export { app, auth, db };
