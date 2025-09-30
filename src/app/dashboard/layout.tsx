@@ -1,12 +1,14 @@
 
+
 "use client";
 
 import Link from 'next/link';
-import { Home, Leaf, Settings } from 'lucide-react';
+import { Home, Settings, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { Loader2 } from 'lucide-react';
 
 export default function DashboardLayout({
   children,
@@ -17,23 +19,20 @@ export default function DashboardLayout({
   const router = useRouter();
 
   useEffect(() => {
-    if (loading) return; // Don't do anything while loading
+    if (loading) return;
     if (!user) {
       router.push('/login');
       return;
     }
-    // Secure the dashboard for farmers only
     if (user.role !== 'farmer') {
       router.push('/');
     }
   }, [user, loading, router]);
 
-  // Render null or a loading spinner while checking auth and role
   if (loading || !user || user.role !== 'farmer') {
     return (
-       <div className="flex items-center justify-center h-screen">
-         {/* You can replace this with a more sophisticated loading skeleton */}
-         <p>Loading...</p>
+       <div className="flex items-center justify-center h-screen bg-background">
+         <Loader2 className="w-12 h-12 animate-spin text-primary" />
        </div>
     );
   }
@@ -47,6 +46,12 @@ export default function DashboardLayout({
             <Button variant="ghost" className="w-full justify-start gap-2">
               <Home className="w-5 h-5" />
               <span className="hidden sm:inline">Overview</span>
+            </Button>
+          </Link>
+          <Link href="/dashboard/suggestions" passHref>
+            <Button variant="ghost" className="w-full justify-start gap-2">
+              <Sparkles className="w-5 h-5" />
+              <span className="hidden sm:inline">Suggestions</span>
             </Button>
           </Link>
           <Link href="/dashboard/settings" passHref>

@@ -25,47 +25,39 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        // User is logged in, now fetch their role from Firestore.
         const userDocRef = doc(db, 'users', firebaseUser.uid);
         try {
           const userDoc = await getDoc(userDocRef);
           if (userDoc.exists()) {
-            const userData = userDoc.data();
-            setUser({ ...firebaseUser, role: userData.role });
+            setUser({ ...firebaseUser, role: userDoc.data().role });
           } else {
-            // User exists in Auth but not Firestore. This can happen during registration
-            // before the Firestore doc is created. Treat as logged in but without a role.
-            setUser(firebaseUser);
+            setUser(firebaseUser); // Role not yet created during registration
           }
         } catch (error) {
-            console.error("Error fetching user data from Firestore:", error);
-            // If there's an error fetching from Firestore, treat as logged in but without a role.
-            setUser(firebaseUser);
+          console.error("Error fetching user role, user might be offline", error);
+          setUser(firebaseUser); // Proceed without role if Firestore is offline
         }
       } else {
-        // User is logged out
         setUser(null);
       }
-      // Set loading to false only after all async operations are complete.
       setLoading(false);
     });
 
-    // Cleanup subscription on unmount
     return () => unsubscribe();
   }, []);
-  
-  // The loading screen will now show until the onAuthStateChanged listener,
-  // and the subsequent Firestore fetch (if applicable), are complete.
+
+  const value = { user, loading };
+
   if (loading) {
     return (
-        <div className="flex items-center justify-center h-screen">
-            <Loader2 className="w-12 h-12 animate-spin text-primary" />
-        </div>
-    )
+      <div className="flex items-center justify-center h-screen bg-background">
+        <Loader2 className="w-12 h-12 animate-spin text-primary" />
+      </div>
+    );
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
