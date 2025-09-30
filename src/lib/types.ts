@@ -35,3 +35,19 @@ export type Order = {
   orderDate: string;
   estimatedDelivery: string;
 };
+
+export type USDADirectory = 'agritourism' | 'csa' | 'farmersmarket' | 'foodhub' | 'onfarmmarket';
+
+export type USDAFarm = {
+  listing_id: string;
+  listing_name: string;
+  listing_description: string;
+  media_website: string;
+  location_state: string;
+  location_city: string;
+  location_zipcode: string;
+  location_x: number;
+  location_y: number;
+  distance: number;
+  directory: USDADirectory;
+};

@@ -1,14 +1,13 @@
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { MapPin, Search, SlidersHorizontal, ChevronUp, History } from 'lucide-react';
-import { farms } from '@/lib/data';
+import { MapPin, Search, SlidersHorizontal, ChevronUp, History, Loader2 } from 'lucide-react';
 import FarmCard from '@/components/farm-card';
 import { placeholderImages } from '@/lib/placeholder-images';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Card } from '@/components/ui/card';
+import { getFarms } from '@/lib/data';
+import type { Farm } from '@/lib/types';
 
 const MapPinButton = ({ top, left, name, farmId }: { top: string, left: string, name: string, farmId: string }) => (
   <div className="absolute z-10" style={{ top, left, transform: 'translate(-50%, -50%)' }}>
@@ -27,8 +26,11 @@ const MapPinButton = ({ top, left, name, farmId }: { top: string, left: string, 
   </div>
 );
 
-export default function Home() {
+export default async function Home() {
   const mapImage = placeholderImages.find(p => p.id === 'map-background');
+  
+  // Example coordinates for Sacramento, CA and a 30-mile radius
+  const farms = await getFarms({ x: -121.4944, y: 38.5816, radius: 30 });
 
   return (
     <div className="relative w-full h-[calc(100vh-4rem)] overflow-hidden">
@@ -64,11 +66,10 @@ export default function Home() {
         </Button>
       </div>
 
-
-      <MapPinButton top="30%" left="40%" name="Green Valley Greens" farmId="green-valley-greens" />
-      <MapPinButton top="50%" left="60%" name="Sunrise Eggs" farmId="sunrise-eggs" />
-      <MapPinButton top="65%" left="35%" name="Honeybee Meadows" farmId="honeybee-meadows" />
-      <MapPinButton top="45%" left="25%" name="Riverside Farmers Market" farmId="riverside-market" />
+      {/* Example map pins. In a real app these would be dynamically generated based on farm locations */}
+      <MapPinButton top="30%" left="40%" name="A verified farm" farmId="1" />
+      <MapPinButton top="50%" left="60%" name="Another farm" farmId="2" />
+      <MapPinButton top="65%" left="35%" name="A cool market" farmId="3" />
 
       <Sheet>
         <SheetTrigger asChild>
@@ -86,9 +87,16 @@ export default function Home() {
             <SheetTitle className="text-center text-xl">Farms & Markets Near You</SheetTitle>
           </SheetHeader>
           <div className="flex-grow overflow-auto p-4 space-y-4 -mx-4">
-            {farms.map(farm => (
-              <FarmCard key={farm.id} farm={farm} />
-            ))}
+            {farms.length > 0 ? (
+                farms.map(farm => (
+                  <FarmCard key={farm.id} farm={farm} />
+                ))
+            ) : (
+                <div className="flex flex-col items-center justify-center h-full text-center">
+                    <Loader2 className="w-8 h-8 animate-spin text-muted-foreground mb-4" />
+                    <p className="text-muted-foreground">Loading farms near you...</p>
+                </div>
+            )}
           </div>
         </SheetContent>
       </Sheet>

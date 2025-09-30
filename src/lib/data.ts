@@ -1,58 +1,11 @@
 import type { Farm, Product } from './types';
 import { placeholderImages } from './placeholder-images';
+import { getUsdaFarms } from './usda';
 
 const getImageUrl = (id: string) => placeholderImages.find(p => p.id === id)?.imageUrl || 'https://placehold.co/400x300';
 
-export const farms: Farm[] = [
-  {
-    id: 'green-valley-greens',
-    name: 'Green Valley Greens',
-    logoUrl: getImageUrl('farm-logo-1'),
-    heroUrl: getImageUrl('farm-hero-1'),
-    bio: 'Family-owned farm specializing in organic leafy greens and heirloom vegetables. We believe in sustainable agriculture and healthy communities.',
-    location: { lat: 38.5816, lng: -121.4944, address: 'Sacramento, CA' },
-    products: ['heirloom-tomatoes', 'green-lettuce'],
-    type: 'farm',
-    rating: 4.8,
-    distance: 5.2,
-  },
-  {
-    id: 'sunrise-eggs',
-    name: 'Sunrise Eggs',
-    logoUrl: getImageUrl('farm-logo-2'),
-    heroUrl: getImageUrl('farm-hero-2'),
-    bio: 'Fresh, free-range eggs delivered daily. Our happy chickens roam freely and eat a natural, all-organic diet.',
-    location: { lat: 38.6, lng: -121.5, address: 'Davis, CA' },
-    products: ['free-range-eggs'],
-    type: 'farm',
-    rating: 4.9,
-    distance: 8.1,
-  },
-  {
-    id: 'honeybee-meadows',
-    name: 'Honeybee Meadows',
-    logoUrl: getImageUrl('farm-logo-3'),
-    heroUrl: getImageUrl('farm-hero-3'),
-    bio: 'Artisanal honey from local wildflowers. Our bees are our passion, and you can taste it in every drop.',
-    location: { lat: 38.55, lng: -121.45, address: 'Carmichael, CA' },
-    products: ['wildflower-honey', 'strawberry-jam'],
-    type: 'farm',
-    rating: 4.7,
-    distance: 12.5,
-  },
-  {
-    id: 'riverside-market',
-    name: 'Riverside Farmers Market',
-    logoUrl: getImageUrl('farm-logo-4'),
-    heroUrl: getImageUrl('farm-hero-4'),
-    bio: 'A collection of the best local farms and artisans. Open every Sunday from 8 AM to 1 PM.',
-    location: { lat: 38.57, lng: -121.51, address: 'Riverside, CA' },
-    products: ['heirloom-tomatoes', 'free-range-eggs', 'wildflower-honey', 'fresh-strawberries', 'organic-zucchini'],
-    type: 'market',
-    rating: 4.9,
-    distance: 2.1,
-  }
-];
+// This is now fetched from the USDA API in the page components.
+export const farms: Farm[] = [];
 
 export const products: Product[] = [
   {
@@ -110,3 +63,40 @@ export const products: Product[] = [
     description: 'Versatile and delicious organic zucchini, great for grilling or baking.'
   }
 ];
+
+export async function getFarms(options: {x: number, y: number, radius: number}): Promise<Farm[]> {
+    const usdaFarms = await getUsdaFarms(options);
+
+    const farmData: Farm[] = usdaFarms.map((usdaFarm, index) => {
+        const farmId = usdaFarm.listing_id || `${usdaFarm.listing_name.replace(/\s+/g, '-').toLowerCase()}-${index}`;
+
+        let type: 'farm' | 'market' | 'vendor' = 'vendor';
+        if (usdaFarm.directory === 'farmersmarket') {
+            type = 'market';
+        } else if (usdaFarm.directory === 'agritourism' || usdaFarm.directory === 'onfarmmarket' || usdaFarm.directory === 'csa') {
+            type = 'farm';
+        }
+        
+        const logoUrlId = `farm-logo-${(index % 4) + 1}`;
+        const heroUrlId = `farm-hero-${(index % 4) + 1}`;
+        
+        return {
+            id: farmId,
+            name: usdaFarm.listing_name,
+            bio: usdaFarm.listing_description || 'A local food provider.',
+            location: {
+                lat: usdaFarm.location_y,
+                lng: usdaFarm.location_x,
+                address: `${usdaFarm.location_city}, ${usdaFarm.location_state}`,
+            },
+            products: [],
+            type: type,
+            rating: Math.random() * (5 - 3.5) + 3.5, // Random rating between 3.5 and 5
+            distance: usdaFarm.distance ? parseFloat(usdaFarm.distance.toFixed(1)) : 0,
+            logoUrl: getImageUrl(logoUrlId),
+            heroUrl: getImageUrl(heroUrlId),
+        };
+    });
+
+    return farmData;
+}
