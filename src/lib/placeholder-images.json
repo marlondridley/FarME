@@ -2,9 +2,9 @@
   "placeholderImages": [
     {
       "id": "map-background",
-      "description": "An overhead view of a green and brown map with roads.",
-      "imageUrl": "https://images.unsplash.com/photo-1590393820812-8a2ed3ece96f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxtYXAlMjBhZXJpYWx8ZW58MHx8fHwxNzU5MTU0MTE5fDA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "map aerial"
+      "description": "A stylized, light-colored map with a street grid.",
+      "imageUrl": "https://images.unsplash.com/photo-1543487995-1c392b54c599?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxsaWdodCUyMG1hcCUyMHBhdHRlcm58ZW58MHx8fHwxNzU5MjgxNDUxfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "map pattern"
     },
     {
       "id": "farm-logo-1",
@@ -51,7 +51,7 @@
     {
       "id": "product-lettuce",
       "description": "A head of fresh green lettuce.",
-      "imageUrl": "https://images.unsplash.com/photo-1736757614152-d500988741db?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8bGV0dHVjZSUyMGZyZXNofGVufDB8fHx8MTc1OTI0NDA0MHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1736757614152-d500988741db?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8bGV0dHVjZSUyMGZyZXNofGVufDB8fHx8MTc1OTI0NDQwMHww&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "lettuce fresh"
     },
     {

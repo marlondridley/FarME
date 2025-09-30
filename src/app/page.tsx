@@ -46,7 +46,7 @@ export default function Home() {
       )}
 
       {/* Map Overlay for slight darkness */}
-      <div className="absolute inset-0 bg-black/50" />
+      <div className="absolute inset-0 bg-black/10" />
 
       {/* Top Search/Filter Bar */}
       <div className="absolute top-4 left-1/2 -translate-x-1/2 w-full max-w-2xl px-4 z-10">
