@@ -28,7 +28,8 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { doc, setDoc } from "firebase/firestore";
+import { auth, db } from "@/lib/firebase";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 const formSchema = z.object({
@@ -63,17 +64,22 @@ export default function RegisterPage() {
         data.password
       );
       
-      // Here you would typically save the user's role to your database (e.g., Firestore)
-      console.log(
-        `User created with email: ${userCredential.user.email} and role: ${data.role}`
-      );
+      const user = userCredential.user;
 
-      toast({
-        title: "Success",
-        description: "Your account has been created.",
+      // Save user role and other details to Firestore
+      await setDoc(doc(db, "users", user.uid), {
+        uid: user.uid,
+        email: user.email,
+        role: data.role,
+        createdAt: new Date(),
       });
 
-      router.push("/");
+      toast({
+        title: "Account Created!",
+        description: "Next, let's complete your subscription.",
+      });
+
+      router.push(`/subscribe?role=${data.role}`);
     } catch (error: any) {
       console.error("Registration error:", error);
       toast({

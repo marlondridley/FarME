@@ -17,13 +17,25 @@ export default function DashboardLayout({
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (loading) return; // Don't do anything while loading
+    if (!user) {
       router.push('/login');
+      return;
+    }
+    // Secure the dashboard for farmers only
+    if (user.role !== 'farmer') {
+      router.push('/');
     }
   }, [user, loading, router]);
 
-  if (loading || !user) {
-    return null; // Or a loading spinner
+  // Render null or a loading spinner while checking auth and role
+  if (loading || !user || user.role !== 'farmer') {
+    return (
+       <div className="flex items-center justify-center h-screen">
+         {/* You can replace this with a more sophisticated loading skeleton */}
+         <p>Loading...</p>
+       </div>
+    );
   }
 
   return (
