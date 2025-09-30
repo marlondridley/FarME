@@ -22,9 +22,11 @@ const MapPinButton = ({ top, left, name, farmId }: { top: string, left: string, 
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button variant="secondary" size="icon" className="rounded-full w-10 h-10 shadow-md border-2 border-white">
-            <MapPin className="w-5 h-5 text-primary fill-primary" />
-          </Button>
+          <Link href={`/farm/${farmId}`}>
+            <Button variant="secondary" size="icon" className="rounded-full w-10 h-10 shadow-md border-2 border-white">
+              <MapPin className="w-5 h-5 text-primary fill-primary" />
+            </Button>
+          </Link>
         </TooltipTrigger>
         <TooltipContent>
           <p>{name}</p>
@@ -91,7 +93,7 @@ export default function Home() {
   const farmsToShow = user ? farms : farms.slice(0, 3);
 
   return (
-    <div className="relative w-full h-[calc(100vh-4rem)] overflow-hidden">
+    <div className="relative w-full h-full overflow-hidden">
       <div className="absolute inset-0 z-0">
         {mapImage && (
           <Image

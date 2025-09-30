@@ -14,7 +14,7 @@ export default function FarmCard({ farm, isGuest = false }: { farm: Farm, isGues
   const TypeIcon = farm.type === 'farm' ? Building : farm.type === 'market' ? Tent : MapPin;
   
   const content = (
-    <Card className="bg-transparent border-0 border-b rounded-none shadow-none hover:bg-muted/30">
+    <Card className="border-b rounded-none hover:bg-muted/30">
       <CardContent className="p-4 flex gap-4 items-start">
         <div className="relative w-24 h-24 rounded-lg overflow-hidden shrink-0">
           <Image 

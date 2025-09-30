@@ -27,7 +27,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={cn("font-sans antialiased dark", fontSans.variable)}>
         <AuthProvider>
-          <div className="relative flex min-h-screen flex-col bg-background">
+          <div className="flex min-h-screen flex-col bg-background">
             <Header />
             <main className="flex-1">{children}</main>
           </div>

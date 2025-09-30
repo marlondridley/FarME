@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useSearchParams } from 'next/navigation';
@@ -77,7 +78,7 @@ export default function OrderPage({ params }: { params: { id: string } }) {
   };
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-card flex flex-col">
+    <div className="min-h-full bg-card flex flex-col">
        <div className="flex-grow container mx-auto py-8 px-4 max-w-lg">
         <Link href={`/farm/${farm.id}`} className="mb-6 inline-block">
           <Button variant="ghost" size="icon" className="h-10 w-10">
