@@ -2,7 +2,7 @@
 "use client";
 
 import Link from 'next/link';
-import { Leaf, Sparkles, User as UserIcon, LogOut } from 'lucide-react';
+import { Leaf, Sparkles, User as UserIcon, LogOut, LayoutGrid } from 'lucide-react';
 import { Button } from '../ui/button';
 import { useAuth } from '@/hooks/use-auth';
 import { auth } from '@/lib/firebase';
@@ -32,6 +32,12 @@ export default function Header() {
           <span className="font-bold text-lg">FarmFinder</span>
         </Link>
         <nav className="flex items-center gap-2 sm:gap-4">
+           <Link href="/explore">
+            <Button variant="ghost">
+              <LayoutGrid className="w-5 h-5 mr-2" />
+              Explore
+            </Button>
+          </Link>
            <Link href="/discover">
             <Button variant="ghost">
               <Sparkles className="w-5 h-5 mr-2" />
@@ -84,7 +90,7 @@ export default function Header() {
                 <Button variant="ghost">Log In</Button>
               </Link>
               <Link href="/signup">
-                <Button variant="secondary">Sign Up</Button>
+                <Button>Sign Up</Button>
               </Link>
             </>
           )}

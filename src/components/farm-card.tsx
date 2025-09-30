@@ -8,35 +8,35 @@ import { Badge } from './ui/badge';
 import { placeholderImages } from '@/lib/placeholder-images';
 import { cn } from '@/lib/utils';
 
-export default function FarmCard({ farm, isGuest = false }: { farm: Farm, isGuest?: boolean }) {
+export default function FarmCard({ farm }: { farm: Farm }) {
   const farmImage = placeholderImages.find(p => farm.logoUrl.includes(p.id));
 
   const TypeIcon = farm.type === 'farm' ? Building : farm.type === 'market' ? Tent : MapPin;
   
   const content = (
-    <Card className="border-b rounded-none hover:bg-muted/30">
+    <Card className="hover:bg-muted/30 transition-colors">
       <CardContent className="p-4 flex gap-4 items-start">
         <div className="relative w-24 h-24 rounded-lg overflow-hidden shrink-0">
           <Image 
             src={farm.logoUrl} 
-            alt={isGuest ? 'A local farm' : farm.name}
+            alt={farm.name}
             fill 
             className="object-cover" 
             data-ai-hint={farmImage?.imageHint || "farm logo"}
           />
         </div>
-        <div className={cn("flex-grow", isGuest && "blur-sm select-none")}>
-          <h3 className="font-semibold text-lg">{isGuest ? 'Local Farm' : farm.name}</h3>
+        <div className="flex-grow">
+          <h3 className="font-semibold text-lg">{farm.name}</h3>
           <p className='text-sm text-muted-foreground mt-1 line-clamp-2'>{farm.bio}</p>
           <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2">
             <div className='flex items-center gap-1'>
               <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-              <span>{isGuest ? '?.?' : farm.rating.toFixed(1)}</span>
+              <span>{farm.rating.toFixed(1)}</span>
             </div>
             {farm.distance && (
               <div className='flex items-center gap-1'>
                 <MapPin className="w-4 h-4" />
-                <span>{isGuest ? '? ' : farm.distance.toFixed(1)} km</span>
+                <span>{farm.distance.toFixed(1)} km</span>
               </div>
             )}
              <div className='flex items-center gap-1 capitalize'>
@@ -49,12 +49,8 @@ export default function FarmCard({ farm, isGuest = false }: { farm: Farm, isGues
     </Card>
   );
 
-  if (isGuest) {
-    return <div className="block px-4 cursor-pointer">{content}</div>
-  }
-
   return (
-    <Link href={`/farm/${farm.id}`} className="block px-4">
+    <Link href={`/farm/${farm.id}`} className="block">
       {content}
     </Link>
   );
