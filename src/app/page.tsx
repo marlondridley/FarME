@@ -108,6 +108,8 @@ export default function Home() {
         <div className="relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
           <Input
+            id="search"
+            name="search"
             placeholder="Search for farms, food, or products"
             className="w-full rounded-full bg-background/80 backdrop-blur-sm h-14 pl-12 pr-4 text-lg border-2 border-border"
           />
