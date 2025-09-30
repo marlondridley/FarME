@@ -48,17 +48,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const value = { user, loading };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-background">
-        <Loader2 className="w-12 h-12 animate-spin text-primary" />
-      </div>
-    );
-  }
-
   return (
     <AuthContext.Provider value={value}>
-      {children}
+      {loading ? (
+         <div className="flex items-center justify-center h-screen bg-background">
+           <Loader2 className="w-12 h-12 animate-spin text-primary" />
+         </div>
+      ) : (
+        children
+      )}
     </AuthContext.Provider>
   );
 };
