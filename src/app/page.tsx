@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { MapPin, Search, SlidersHorizontal, ChevronUp, History, Loader2, AlertTriangle } from 'lucide-react';
 import FarmCard from '@/components/farm-card';
-import { placeholderImages } from '@/lib/placeholder-images';
+import { placeholderImages as placeholderImageData } from '@/lib/placeholder-images.json';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { getFarms } from '@/lib/data';
 import type { Farm } from '@/lib/types';
@@ -34,7 +34,7 @@ const MapPinButton = ({ top, left, name, farmId }: { top: string, left: string, 
 );
 
 export default function Home() {
-  const mapImage = placeholderImages.find(p => p.id === 'map-background');
+  const mapImage = placeholderImageData.find(p => p.id === 'map-background');
   const { user } = useAuth();
   const [farms, setFarms] = useState<Farm[]>([]);
   const [loading, setLoading] = useState(true);
