@@ -1,30 +1,54 @@
 
 "use client";
 
-import { farms, products as allProducts } from '@/lib/data';
+import { products as allProducts, getFarmById } from '@/lib/data';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Heart, Leaf, MapPin, Star, Truck, Info, ArrowLeft } from 'lucide-react';
+import { Heart, Leaf, MapPin, Star, Truck, Info, ArrowLeft, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { placeholderImages } from '@/lib/placeholder-images';
 import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/hooks/use-auth';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import type { Farm } from '@/lib/types';
 
 export default function FarmPage({ params }: { params: { id: string } }) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [isFavorited, setIsFavorited] = useState(false);
+  const [farm, setFarm] = useState<Farm | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const farm = farms.find(f => f.id === params.id);
+  useEffect(() => {
+    const fetchFarm = async () => {
+      setLoading(true);
+      const fetchedFarm = await getFarmById(params.id);
+      if (fetchedFarm) {
+        setFarm(fetchedFarm);
+      } else {
+        notFound();
+      }
+      setLoading(false);
+    };
+
+    fetchFarm();
+  }, [params.id]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-4rem)]">
+        <Loader2 className="w-12 h-12 animate-spin text-primary" />
+      </div>
+    );
+  }
   
   if (!farm) {
-    notFound();
+    return null; // notFound() would have been called in useEffect
   }
 
   const handleFavoriteClick = () => {

@@ -91,7 +91,7 @@ export async function getFarms(options: {x: number, y: number, radius: number}):
                 lng: usdaFarm.location_x,
                 address: `${usdaFarm.location_city}, ${usdaFarm.location_state}`,
             },
-            products: [],
+            products: ['heirloom-tomatoes', 'green-lettuce'], // Sample products
             type: type,
             rating: Math.random() * (5 - 3.5) + 3.5, // Random rating between 3.5 and 5
             distance: !isNaN(distanceNumber) ? parseFloat(distanceNumber.toFixed(1)) : 0,
@@ -101,4 +101,33 @@ export async function getFarms(options: {x: number, y: number, radius: number}):
     });
 
     return farmData;
+}
+
+export async function getFarmById(id: string): Promise<Farm | null> {
+    // In a real application, you would fetch this from your database.
+    // For now, we'll simulate it by creating a mock farm object.
+    // We can't use getFarms because that requires coordinates.
+    
+    // Simple mock to ensure the page renders
+    if (id) {
+        const randomImageId = Math.floor(Math.random() * 4) + 1;
+        return {
+            id: id,
+            name: "The Bountiful Harvest",
+            bio: "Serving the community with fresh, organic produce for over 20 years. We believe in sustainable farming and healthy living.",
+            location: {
+                lat: 38.5816,
+                lng: -121.4944,
+                address: "Sacramento, CA",
+            },
+            products: ['heirloom-tomatoes', 'green-lettuce', 'fresh-strawberries', 'organic-zucchini'],
+            type: 'farm',
+            rating: 4.8,
+            distance: 12.5,
+            logoUrl: getImageUrl(`farm-logo-${randomImageId}`),
+            heroUrl: getImageUrl(`farm-hero-${randomImageId}`),
+        };
+    }
+
+    return null;
 }
