@@ -45,7 +45,7 @@ Order Details:
 - Farm: {{{farmName}}}
 - Product: {{{productName}}}
 - Quantity: {{{quantity}}}
-- Total: ${{{total}}}
+- Total: {{{total}}}
 
 The order ID should be in the format 'ord_xxxxxxxx'.
 The farmer notification should be a short, clear message summarizing the new order.
