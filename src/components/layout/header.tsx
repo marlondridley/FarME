@@ -66,9 +66,11 @@ export default function Header() {
                     <Link href="/dashboard">Dashboard</Link>
                   </DropdownMenuItem>
                 )}
+                {user.role === 'farmer' && (
                 <DropdownMenuItem asChild>
                    <Link href="/dashboard/settings">Settings</Link>
                 </DropdownMenuItem>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut}>
                   <LogOut className="mr-2 h-4 w-4" />
