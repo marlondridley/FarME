@@ -3,7 +3,7 @@
 "use client";
 
 import Link from 'next/link';
-import { Home, Settings, Sparkles } from 'lucide-react';
+import { Home, Settings, Sparkles, Tractor } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
@@ -46,6 +46,12 @@ export default function DashboardLayout({
             <Button variant="ghost" className="w-full justify-start gap-2">
               <Home className="w-5 h-5" />
               <span className="hidden sm:inline">Overview</span>
+            </Button>
+          </Link>
+           <Link href="/dashboard/profile" passHref>
+            <Button variant="ghost" className="w-full justify-start gap-2">
+              <Tractor className="w-5 h-5" />
+              <span className="hidden sm:inline">Farm Profile</span>
             </Button>
           </Link>
           <Link href="/dashboard/suggestions" passHref>
