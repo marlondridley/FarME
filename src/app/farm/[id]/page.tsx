@@ -17,7 +17,8 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import type { Farm } from '@/lib/types';
 
-export default function FarmPage({ params: { id } }: { params: { id: string } }) {
+export default function FarmPage({ params }: { params: { id: string } }) {
+  const { id } = params;
   const { user } = useAuth();
   const { toast } = useToast();
   const [isFavorited, setIsFavorited] = useState(false);
@@ -128,7 +129,7 @@ export default function FarmPage({ params: { id } }: { params: { id: string } })
                     <CardContent className="p-0 flex-grow">
                       <h3 className="text-lg font-semibold">{product.name}</h3>
                       <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{product.description}</p>
-                      <p className="text-md font-medium text-foreground mt-2">${product.price.toFixed(2)}</p>
+                      <p className="text-md font-medium text-foreground mt-2">$${product.price.toFixed(2)}</p>
                     </CardContent>
                     <div className="relative h-24 w-24 sm:h-28 sm:w-28 rounded-md overflow-hidden shrink-0">
                       <Image src={product.imageUrl} alt={product.name} fill className="object-cover transition-transform group-hover:scale-105" data-ai-hint={productImage?.imageHint || "product vegetable"} />
