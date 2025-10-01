@@ -1,7 +1,7 @@
 
 import type { Farm, Product } from './types';
 import { placeholderImages } from './placeholder-images';
-import { getFarmsFromUSDA } from './usda';
+import { getFarms as getFarmsFromDb } from './database';
 
 const getImageUrl = (id: string) => placeholderImages.find(p => p.id === id)?.imageUrl || 'https://placehold.co/400x300';
 
@@ -62,9 +62,73 @@ export const products: Product[] = [
   }
 ];
 
-export async function getFarms(lat?: number, lng?: number): Promise<Farm[]> {
-    // Default to a sample location if none is provided.
-    const farms = await getFarmsFromUSDA(lat || 40.7128, lng || -74.0060);
+export const farms: Farm[] = [
+    {
+        id: 'green-valley-greens',
+        name: 'Green Valley Greens',
+        logoUrl: getImageUrl('farm-logo-1'),
+        heroUrl: getImageUrl('farm-hero-1'),
+        bio: 'Specializing in organic leafy greens and heirloom vegetables.',
+        location: {
+            address: '123 Green Valley Rd, Organica, CA',
+            geopoint: { latitude: 34.0522, longitude: -118.2437 } as any,
+        },
+        products: ['heirloom-tomatoes', 'green-lettuce'],
+        type: 'farm',
+        rating: 4.8,
+    },
+    {
+        id: 'sunrise-eggs',
+        name: 'Sunrise Eggs',
+        logoUrl: getImageUrl('farm-logo-2'),
+        heroUrl: getImageUrl('farm-hero-2'),
+        bio: 'The freshest free-range eggs, from happy chickens.',
+        location: {
+            address: '456 Chicken Run, Cluckington, CA',
+            geopoint: { latitude: 34.0522, longitude: -118.2437 } as any,
+        },
+        products: ['free-range-eggs'],
+        type: 'farm',
+        rating: 4.9,
+    },
+    {
+        id: 'honeybee-meadows',
+        name: 'Honeybee Meadows',
+        logoUrl: getImageUrl('farm-logo-3'),
+        heroUrl: getImageUrl('farm-hero-3'),
+        bio: 'Artisanal honey from local wildflowers. As pure as it gets.',
+        location: {
+            address: '789 Nectar Ln, Buzzville, CA',
+            geopoint: { latitude: 34.0522, longitude: -118.2437 } as any,
+        },
+        products: ['wildflower-honey'],
+        type: 'vendor',
+        rating: 4.7,
+    },
+    {
+        id: 'riverside-market',
+        name: 'Riverside Community Market',
+        logoUrl: getImageUrl('farm-logo-4'),
+        heroUrl: getImageUrl('farm-hero-4'),
+        bio: 'A collective of local growers and artisans. Your one-stop shop for local goodness.',
+        location: {
+            address: '101 Market St, Riverside, CA',
+            geopoint: { latitude: 34.0522, longitude: -118.2437 } as any,
+        },
+        products: ['fresh-strawberries', 'organic-zucchini'],
+        type: 'market',
+        rating: 4.6,
+    }
+];
+
+export async function getFarms(): Promise<Farm[]> {
+    const farms = await getFarmsFromDb();
+    
+    if (farms.length === 0) {
+        // Return static data if the database is empty, so the app is still usable.
+        return staticFarmsWithImages;
+    }
+
     return farms.map((farm, index) => {
         const logoUrlId = `farm-logo-${(index % 4) + 1}`;
         const heroUrlId = `farm-hero-${(index % 4) + 1}`;
@@ -76,13 +140,21 @@ export async function getFarms(lat?: number, lng?: number): Promise<Farm[]> {
     });
 }
 
+
 export async function getFarmById(id: string): Promise<Farm | null> {
     if (!id) return null;
-
+    
+    // In a real app, this would fetch a single document from Firestore.
+    // For now, we'll find it in the list we get from the DB.
     const allFarms = await getFarms();
     
     let farm = allFarms.find(f => f.id === id);
 
+    // Fallback to static data if not found in DB results
+    if (!farm) {
+      farm = staticFarmsWithImages.find(f => f.id === id);
+    }
+    
     if (farm) {
         // Enhance the found farm with a richer product list for the detail page.
         farm.products = ['heirloom-tomatoes', 'green-lettuce', 'fresh-strawberries', 'organic-zucchini', 'free-range-eggs', 'wildflower-honey'];
@@ -91,3 +163,14 @@ export async function getFarmById(id: string): Promise<Farm | null> {
 
     return null;
 }
+
+// Add images to static farm data
+const staticFarmsWithImages = farms.map((farm, index) => {
+    const logoUrlId = `farm-logo-${(index % 4) + 1}`;
+    const heroUrlId = `farm-hero-${(index % 4) + 1}`;
+    return {
+        ...farm,
+        logoUrl: getImageUrl(logoUrlId),
+        heroUrl: getImageUrl(heroUrlId),
+    }
+});
