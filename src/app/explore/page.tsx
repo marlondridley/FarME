@@ -24,11 +24,12 @@ export default function ExplorePage() {
       setLoading(true);
       setError(null);
       try {
-        const fetchedFarms = await getFarms();
+        // A real app would use geolocation. For now, we'll use a default.
+        const fetchedFarms = await getFarms(34.0522, -118.2437); // Los Angeles
         setFarms(fetchedFarms);
       } catch (error) {
         console.error("Failed to fetch farms:", error);
-        setError("Could not fetch farm data. Please try again later.");
+        setError("Could not fetch farm data. Please try again later. Ensure your USDA API key is set.");
       } finally {
         setLoading(false);
       }
@@ -71,7 +72,7 @@ export default function ExplorePage() {
                 </div>
             ) : (
               <>
-                {(farms).map(farm => (
+                {(user ? farms : farms.slice(0, 3)).map(farm => (
                   <FarmCard key={farm.id} farm={farm} />
                 ))}
                 {!user && farms.length > 3 && (

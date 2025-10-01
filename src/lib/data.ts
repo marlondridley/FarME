@@ -1,7 +1,7 @@
 
 import type { Farm, Product } from './types';
 import { placeholderImages } from './placeholder-images';
-import { getFarmsFromFirestore } from './database';
+import { getFarmsFromUSDA } from './usda';
 
 const getImageUrl = (id: string) => placeholderImages.find(p => p.id === id)?.imageUrl || 'https://placehold.co/400x300';
 
@@ -62,8 +62,9 @@ export const products: Product[] = [
   }
 ];
 
-export async function getFarms(): Promise<Farm[]> {
-    const farms = await getFarmsFromFirestore();
+export async function getFarms(lat?: number, lng?: number): Promise<Farm[]> {
+    // Default to a sample location if none is provided.
+    const farms = await getFarmsFromUSDA(lat || 40.7128, lng || -74.0060);
     return farms.map((farm, index) => {
         const logoUrlId = `farm-logo-${(index % 4) + 1}`;
         const heroUrlId = `farm-hero-${(index % 4) + 1}`;
