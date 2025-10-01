@@ -31,14 +31,6 @@ import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { checkPasswordLeak, RECAPTCHA_REGISTER_ACTION } from "@/ai/flows/password-leak-flow";
-
-// Augment the window object with the grecaptcha type
-declare global {
-  interface Window {
-    grecaptcha: any;
-  }
-}
 
 const formSchema = z.object({
   email: z.string().email({ message: "Invalid email address." }),
@@ -65,83 +57,39 @@ export default function RegisterPage() {
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     setLoading(true);
+    try {
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        data.email,
+        data.password
+      );
+      
+      const user = userCredential.user;
 
-    if (!window.grecaptcha) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'reCAPTCHA not loaded. Please try again.',
+      // Save user role and other details to Firestore
+      await setDoc(doc(db, "users", user.uid), {
+        uid: user.uid,
+        email: user.email,
+        role: data.role,
+        createdAt: new Date(),
       });
+
+      toast({
+        title: "Account Created!",
+        description: "Next, let's complete your subscription.",
+      });
+
+      router.push(`/subscribe?role=${data.role}`);
+    } catch (error: any) {
+      console.error("Registration error:", error);
+      toast({
+        variant: "destructive",
+        title: "Registration Failed",
+        description: error.message || "An unexpected error occurred.",
+      });
+    } finally {
       setLoading(false);
-      return;
     }
-
-    window.grecaptcha.enterprise.ready(async () => {
-      try {
-        const token = await window.grecaptcha.enterprise.execute(process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY, {action: RECAPTCHA_REGISTER_ACTION});
-        
-        // Check reCAPTCHA and password leak before proceeding
-        const result = await checkPasswordLeak({ 
-          email: data.email, 
-          password: data.password,
-          token: token 
-        });
-
-        if (!result.assessment.valid || !result.assessment.actionMatches) {
-            toast({
-              variant: "destructive",
-              title: "Bot Detected",
-              description: "reCAPTCHA verification failed. Please try again.",
-              duration: 8000,
-            });
-            setLoading(false);
-            return;
-        }
-
-        if (result.leaked) {
-          toast({
-            variant: "destructive",
-            title: "Insecure Password",
-            description: "This password has been exposed in a data breach. Please choose a different password.",
-            duration: 8000,
-          });
-          setLoading(false);
-          return;
-        }
-
-        const userCredential = await createUserWithEmailAndPassword(
-          auth,
-          data.email,
-          data.password
-        );
-        
-        const user = userCredential.user;
-
-        // Save user role and other details to Firestore
-        await setDoc(doc(db, "users", user.uid), {
-          uid: user.uid,
-          email: user.email,
-          role: data.role,
-          createdAt: new Date(),
-        });
-
-        toast({
-          title: "Account Created!",
-          description: "Next, let's complete your subscription.",
-        });
-
-        router.push(`/subscribe?role=${data.role}`);
-      } catch (error: any) {
-        console.error("Registration error:", error);
-        toast({
-          variant: "destructive",
-          title: "Registration Failed",
-          description: error.message || "An unexpected error occurred.",
-        });
-      } finally {
-        setLoading(false);
-      }
-    });
   };
 
   return (
