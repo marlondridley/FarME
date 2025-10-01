@@ -17,7 +17,13 @@ interface USDALocalFoodMarket {
 }
 
 function isValidMarket(market: any): market is USDALocalFoodMarket {
-  return market && typeof market.listing_id === 'string' && typeof market.listing_name === 'string';
+  return (
+    market &&
+    typeof market.listing_id === 'string' &&
+    typeof market.listing_name === 'string' &&
+    typeof market.lat === 'number' &&
+    typeof market.lon === 'number'
+  );
 }
 
 async function fetchFromDirectory(directory: string, lat: number, lon: number, apiKey: string): Promise<USDALocalFoodMarket[]> {
