@@ -1,6 +1,7 @@
 
 import FarmPageClient from "@/components/farm-page-client";
 
-export default function FarmPage({ params: { id } }: { params: { id: string } }) {
+export default async function FarmPage({ params }: { params: { id: string } }) {
+  const { id } = await params;
   return <FarmPageClient id={id} />;
 }

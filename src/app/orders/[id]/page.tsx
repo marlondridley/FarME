@@ -1,5 +1,4 @@
 
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Package, Send, ShoppingBasket, Truck, Wallet } from 'lucide-react';
 import Link from 'next/link';
@@ -13,7 +12,8 @@ const timelineEvents = [
   { icon: Wallet, title: 'Payment', description: 'Pay upon delivery or pickup.', status: 'pending'},
 ];
 
-export default function OrderTrackingPage({ params: { id: orderId } }: { params: { id: string } }) {
+export default function OrderTrackingPage({ params }: { params: { id: string } }) {
+  const orderId = params.id;
   return (
     <div className="container mx-auto py-8 px-4 max-w-2xl">
       <Card>
