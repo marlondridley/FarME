@@ -12,7 +12,8 @@ const timelineEvents = [
   { icon: Wallet, title: 'Payment', description: 'Pay upon delivery or pickup.', status: 'pending'},
 ];
 
-export default function OrderTrackingPage({ params: { id: orderId } }: { params: { id: string } }) {
+export default function OrderTrackingPage({ params }: { params: { id: string } }) {
+  const { id: orderId } = params;
   return (
     <div className="container mx-auto py-8 px-4 max-w-2xl">
       <Card>

@@ -5,18 +5,17 @@ import { getFarmById, products as allProducts } from '@/lib/data';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Heart, Leaf, MapPin, Star, Truck, Info, ArrowLeft, Loader2 } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
+import { Heart, Star, ArrowLeft, Loader2 } from 'lucide-react';
 import { placeholderImages } from '@/lib/placeholder-images';
-import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/hooks/use-auth';
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import type { Farm } from '@/lib/types';
 
-export default function FarmPage({ params: { id } }: { params: { id: string } }) {
+export default function FarmPage({ params }: { params: { id: string } }) {
+  const { id } = params;
   const { user } = useAuth();
   const { toast } = useToast();
   const [isFavorited, setIsFavorited] = useState(false);
@@ -27,7 +26,7 @@ export default function FarmPage({ params: { id } }: { params: { id: string } })
     const fetchFarm = async () => {
       setLoading(true);
       const fetchedFarm = await getFarmById(id);
-      setFarm(fetchedFarm); // This can be null if not found
+      setFarm(fetchedFarm);
       setLoading(false);
     };
 
@@ -63,7 +62,6 @@ export default function FarmPage({ params: { id } }: { params: { id: string } })
       });
       return;
     }
-    // Here you would typically update the database
     setIsFavorited(!isFavorited);
     toast({
       title: isFavorited ? 'Removed from Favorites' : 'Added to Favorites',
@@ -100,7 +98,6 @@ export default function FarmPage({ params: { id } }: { params: { id: string } })
                   <span className="font-semibold">{farm.rating.toFixed(1)}</span>
                   <span className="text-muted-foreground">(500+ ratings)</span>
                 </div>
-                 <Separator orientation="vertical" className="h-4 bg-border" />
                  {farm.distance && (
                     <div className="flex items-center gap-1">
                         <span>{farm.distance.toFixed(1)} km away</span>
@@ -116,7 +113,6 @@ export default function FarmPage({ params: { id } }: { params: { id: string } })
         </Card>
       </div>
 
-      {/* Products Section */}
       <div className="container mt-8 px-4">
         <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
           All Products
