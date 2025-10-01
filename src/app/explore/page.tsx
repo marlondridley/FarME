@@ -5,7 +5,6 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { MapPin, Search, SlidersHorizontal, History, Loader2, AlertTriangle } from 'lucide-react';
 import FarmCard from '@/components/farm-card';
@@ -19,28 +18,60 @@ export default function ExplorePage() {
   const [farms, setFarms] = useState<Farm[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [coords, setCoords] = useState<{ latitude: number, longitude: number} | null>(null);
+  const [locationError, setLocationError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Don't fetch until auth state is resolved
-    if (authLoading) return;
+    // 1. Get user's location
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setCoords({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          });
+          setLocationError(null);
+        },
+        (err) => {
+          console.warn(`ERROR(${err.code}): ${err.message}`);
+          setLocationError("Could not get your location. Please enable location services in your browser settings and refresh the page.");
+          setLoading(false);
+        }
+      );
+    } else {
+      setLocationError("Geolocation is not supported by this browser.");
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    // 2. Fetch farms once we have location (or if auth state changes)
+    if (authLoading || (!coords && !locationError)) return;
 
     const fetchFarms = async () => {
       setLoading(true);
       setError(null);
-      try {
-        // A real app would use geolocation. For now, we'll use a default.
-        // We pass the user object to determine which data source to use.
-        const fetchedFarms = await getExploreFarms(user, 34.0522, -118.2437); // Los Angeles
-        setFarms(fetchedFarms);
-      } catch (error) {
-        console.error("Failed to fetch farms:", error);
-        setError("Could not fetch farm data. Please try again later. Ensure your USDA API key is set.");
-      } finally {
+      
+      if (locationError) {
         setLoading(false);
+        return;
+      }
+      
+      if (coords) {
+         try {
+            const fetchedFarms = await getExploreFarms(user, coords.latitude, coords.longitude);
+            setFarms(fetchedFarms);
+        } catch (error) {
+            console.error("Failed to fetch farms:", error);
+            setError("Could not fetch farm data. Please try again later. Ensure your USDA API key is set.");
+        } finally {
+            setLoading(false);
+        }
       }
     };
+    
     fetchFarms();
-  }, [user, authLoading]);
+  }, [user, authLoading, coords, locationError]);
   
   return (
     <div className="container mx-auto py-8">
@@ -69,6 +100,15 @@ export default function ExplorePage() {
                   </AlertDescription>
                 </Alert>
             )}
+             {locationError && (
+                 <Alert variant="destructive">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertTitle>Location Error</AlertTitle>
+                  <AlertDescription>
+                    {locationError}
+                  </AlertDescription>
+                </Alert>
+            )}
 
             {loading || authLoading ? (
                 <div className="flex flex-col items-center justify-center h-64 text-center">
@@ -89,11 +129,11 @@ export default function ExplorePage() {
                     </Button>
                   </div>
                 )}
-                 {farms.length === 0 && !error && (
+                 {farms.length === 0 && !error && !locationError && (
                     <div className="flex flex-col items-center justify-center h-64 text-center border rounded-lg">
                         <MapPin className="w-12 h-12 text-muted-foreground/50 mb-4" />
                         <h3 className="text-lg font-semibold">No Farms Found</h3>
-                        <p className="text-muted-foreground">We couldn't find any farms in our database. Once data is added, it will appear here.</p>
+                        <p className="text-muted-foreground">We couldn't find any farms in your area. Try expanding your search radius or checking back later.</p>
                     </div>
                 )}
               </>
