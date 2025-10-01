@@ -1,0 +1,17 @@
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users can only read and write their own user document.
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Farms are publicly readable.
+    // Only an authenticated user with the 'farmer' role whose UID matches the farm document ID can write.
+    match /farms/{farmId} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == farmId && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'farmer';
+    }
+  }
+}
