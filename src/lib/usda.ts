@@ -2,16 +2,55 @@
 import type { Farm } from './types';
 import { GeoPoint } from 'firebase/firestore';
 
-// A type guard to ensure we have a valid market object
-interface USDAMarket {
-    id: string;
-    marketname: string;
-    // The API sometimes returns distance as a string, sometimes a number.
-    [key: string]: any; 
+interface USDALocalFoodMarket {
+  listing_id: string;
+  listing_name: string;
+  location_address: string;
+  location_city: string;
+  location_state: string;
+  location_zipcode: string;
+  media_website: string;
+  lat: number;
+  lon: number;
+  d: number;
+  listing_type: 'farmersmarket' | 'csa' | 'onfarmmarket' | 'foodhub' | 'agritourism';
 }
 
-function isValidMarket(market: any): market is USDAMarket {
-  return market && typeof market.id === 'string' && typeof market.marketname === 'string';
+function isValidMarket(market: any): market is USDALocalFoodMarket {
+  return market && typeof market.listing_id === 'string' && typeof market.listing_name === 'string';
+}
+
+async function fetchFromDirectory(directory: string, lat: number, lon: number, apiKey: string): Promise<USDALocalFoodMarket[]> {
+    const radius = 50; // Search within a 50-mile radius
+    const url = `https://www.usdalocalfoodportal.com/api/${directory}/?apikey=${apiKey}&x=${lon}&y=${lat}&radius=${radius}`;
+
+    try {
+        const response = await fetch(url);
+        if (!response.ok) {
+            console.error(`USDA API request for ${directory} failed with status: ${response.status}`);
+            const errorText = await response.text();
+            console.error('Error details:', errorText);
+            return [];
+        }
+        const data = await response.json();
+        return data.data.map((item: any) => ({ ...item, listing_type: directory as any}));
+    } catch (error) {
+        console.error(`Error fetching from ${directory}:`, error);
+        return [];
+    }
+}
+
+function getFarmType(listingType: USDALocalFoodMarket['listing_type']): Farm['type'] {
+    switch(listingType) {
+        case 'farmersmarket':
+            return 'market';
+        case 'onfarmmarket':
+            return 'farm';
+        case 'csa':
+            return 'farm';
+        default:
+            return 'vendor';
+    }
 }
 
 
@@ -20,60 +59,41 @@ export async function getFarmsFromUSDA(lat: number, lng: number): Promise<Farm[]
 
     if (!apiKey || apiKey === "YOUR_API_KEY") {
         console.error("USDA API Key is not configured. Please add it to your .env file.");
-        // Return an empty array or throw an error, depending on desired behavior
         return []; 
     }
     
-    // The USDA API uses different endpoints for lat/lng vs zip.
-    const url = `https://www.ams.usda.gov/farmersmarkets/v1/data.svc/locSearch?lat=${lat}&lng=${lng}&auth=${apiKey}`;
+    const directories: USDALocalFoodMarket['listing_type'][] = ['farmersmarket', 'csa', 'onfarmmarket'];
+    const allResults = await Promise.all(
+        directories.map(dir => fetchFromDirectory(dir, lat, lng, apiKey))
+    );
+    
+    const combinedResults = allResults.flat();
+    const uniqueResults = Array.from(new Map(combinedResults.map(item => [item.listing_id, item])).values());
 
-    try {
-        const response = await fetch(url);
+    return uniqueResults
+        .filter(isValidMarket)
+        .map((market: USDALocalFoodMarket) => {
+            const fullAddress = [
+                market.location_address, 
+                market.location_city,
+                market.location_state,
+                market.location_zipcode
+            ].filter(Boolean).join(', ');
 
-        if (!response.ok) {
-            console.error(`USDA API request failed with status: ${response.status}`);
-            const errorText = await response.text();
-            console.error('Error details:', errorText);
-            throw new Error('Failed to fetch data from USDA API.');
-        }
-
-        const data = await response.json();
-
-        if (!data.results) {
-            console.warn("USDA API returned no results for the given location.");
-            return [];
-        }
-
-        return data.results
-            .filter(isValidMarket)
-            .map((market: USDAMarket) => {
-                // The market name string often contains the distance, e.g., "3.5 mi) Main Street Market"
-                // We need to parse it out.
-                const nameParts = market.marketname.split(')');
-                const cleanName = nameParts.length > 1 ? nameParts.slice(1).join(')').trim() : market.marketname;
-                const distance = nameParts.length > 1 ? parseFloat(nameParts[0]) : 0;
-
-                return {
-                    id: market.id,
-                    name: cleanName,
-                    bio: 'A local market providing fresh produce from various vendors.', // USDA API doesn't provide a bio
-                    location: {
-                        geopoint: new GeoPoint(lat, lng), // This is the search origin, not the market's precise location
-                        address: 'Address not provided by API',
-                    },
-                    products: [], // Products are not detailed in this API response
-                    type: 'market',
-                    rating: 4.5, // Assign a default rating
-                    distance: distance,
-                    // These will be overridden in data.ts
-                    logoUrl: '', 
-                    heroUrl: '',
-                } as Farm;
-            });
-
-    } catch (error) {
-        console.error('Error fetching or processing USDA data:', error);
-        // Return an empty array to prevent the app from crashing.
-        return [];
-    }
+            return {
+                id: market.listing_id,
+                name: market.listing_name,
+                bio: market.media_website || 'A local food provider offering fresh products.',
+                location: {
+                    geopoint: new GeoPoint(market.lat, market.lon),
+                    address: fullAddress,
+                },
+                products: [], 
+                type: getFarmType(market.listing_type),
+                rating: 4.5, // Assign a default rating
+                distance: market.d,
+                logoUrl: '', 
+                heroUrl: '',
+            } as Farm;
+        });
 }

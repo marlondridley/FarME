@@ -14,7 +14,7 @@ export type Farm = {
   products: string[]; // array of product ids
   type: 'farm' | 'market' | 'vendor';
   rating: number;
-  distance?: number; // in km, will be calculated on the client
+  distance?: number; // in miles, from API
 };
 
 export type Product = {
