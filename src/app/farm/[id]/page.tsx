@@ -1,7 +1,6 @@
 
 import FarmPageClient from "@/components/farm-page-client";
 
-export default function FarmPage({ params }: { params: { id: string } }) {
-  const id = params.id;
+export default function FarmPage({ params: { id } }: { params: { id: string } }) {
   return <FarmPageClient id={id} />;
 }
