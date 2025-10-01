@@ -55,6 +55,12 @@
       "imageHint": "farmers market"
     },
     {
+      "id": "farmers-market-stall",
+      "description": "A farmers market stall with fresh produce.",
+      "imageUrl": "https://storage.googleapis.com/aifirebase.appspot.com/user-generated/2024-08-01/16:21:40.941-0.jpeg",
+      "imageHint": "farmers market"
+    },
+    {
       "id": "product-tomatoes",
       "description": "A bunch of ripe red tomatoes.",
       "imageUrl": "https://images.unsplash.com/photo-1683008952458-dc02ac67f382?w=400&h=300&fit=crop&q=80",

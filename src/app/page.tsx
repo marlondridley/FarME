@@ -33,6 +33,7 @@ export default function Home() {
         placeholderImages.find(p => p.id === 'farm-hero-1'),
         placeholderImages.find(p => p.id === 'farm-hero-4'),
         placeholderImages.find(p => p.id === 'product-strawberries'),
+        placeholderImages.find(p => p.id === 'farmers-market-stall'),
     ];
 
     return (
