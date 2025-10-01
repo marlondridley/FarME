@@ -1,8 +1,7 @@
 
 "use client";
 
-import { products as allProducts, getFarmById } from '@/lib/data';
-import { notFound } from 'next/navigation';
+import { getFarmById } from '@/lib/data';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -28,11 +27,7 @@ export default function FarmPage({ params: { id } }: { params: { id: string } })
     const fetchFarm = async () => {
       setLoading(true);
       const fetchedFarm = await getFarmById(id);
-      if (fetchedFarm) {
-        setFarm(fetchedFarm);
-      } else {
-        notFound();
-      }
+      setFarm(fetchedFarm); // This can be null if not found
       setLoading(false);
     };
 
@@ -48,7 +43,15 @@ export default function FarmPage({ params: { id } }: { params: { id: string } })
   }
   
   if (!farm) {
-    return null; // notFound() would have been called in useEffect
+    return (
+       <div className="container mx-auto py-10 text-center">
+        <h2 className='text-2xl font-bold'>Farm Not Found</h2>
+        <p className='text-muted-foreground'>The farm you are looking for does not exist.</p>
+        <Link href="/explore">
+          <Button className="mt-4">Back to Explore</Button>
+        </Link>
+      </div>
+    );
   }
 
   const handleFavoriteClick = () => {
