@@ -31,6 +31,7 @@ import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { checkPasswordLeak } from "@/ai/flows/password-leak-flow";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Invalid email address." }),
@@ -58,6 +59,20 @@ export default function RegisterPage() {
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     setLoading(true);
     try {
+      // Check for password leak before proceeding
+      const leakResult = await checkPasswordLeak({ email: data.email, password: data.password });
+
+      if (leakResult.leaked) {
+        toast({
+          variant: "destructive",
+          title: "Insecure Password",
+          description: "This password has been exposed in a data breach. Please choose a different password.",
+          duration: 8000,
+        });
+        setLoading(false);
+        return;
+      }
+
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         data.email,
