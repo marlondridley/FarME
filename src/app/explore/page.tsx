@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useEffect, useState } from 'react';
@@ -8,24 +9,28 @@ import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { MapPin, Search, SlidersHorizontal, History, Loader2, AlertTriangle } from 'lucide-react';
 import FarmCard from '@/components/farm-card';
-import { getFarms } from '@/lib/data';
+import { getExploreFarms } from '@/lib/data';
 import type { Farm } from '@/lib/types';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useAuth } from '@/hooks/use-auth';
 
 export default function ExplorePage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [farms, setFarms] = useState<Farm[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Don't fetch until auth state is resolved
+    if (authLoading) return;
+
     const fetchFarms = async () => {
       setLoading(true);
       setError(null);
       try {
         // A real app would use geolocation. For now, we'll use a default.
-        const fetchedFarms = await getFarms(34.0522, -118.2437); // Los Angeles
+        // We pass the user object to determine which data source to use.
+        const fetchedFarms = await getExploreFarms(user, 34.0522, -118.2437); // Los Angeles
         setFarms(fetchedFarms);
       } catch (error) {
         console.error("Failed to fetch farms:", error);
@@ -35,7 +40,7 @@ export default function ExplorePage() {
       }
     };
     fetchFarms();
-  }, []);
+  }, [user, authLoading]);
   
   return (
     <div className="container mx-auto py-8">
@@ -65,14 +70,14 @@ export default function ExplorePage() {
                 </Alert>
             )}
 
-            {loading ? (
+            {loading || authLoading ? (
                 <div className="flex flex-col items-center justify-center h-64 text-center">
                     <Loader2 className="w-8 h-8 animate-spin text-muted-foreground mb-4" />
                     <p className="text-muted-foreground">Finding farms near you...</p>
                 </div>
             ) : (
               <>
-                {(user ? farms : farms.slice(0, 3)).map(farm => (
+                {farms.map(farm => (
                   <FarmCard key={farm.id} farm={farm} />
                 ))}
                 {!user && farms.length > 3 && (

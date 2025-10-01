@@ -1,7 +1,9 @@
 
 import type { Farm, Product } from './types';
 import { placeholderImages } from './placeholder-images';
-import { getFarms as getFarmsFromDb } from './database';
+import { getFarms as getFarmsFromFirestore } from './database';
+import { getFarmsFromUSDA } from './usda';
+import type { User } from '@/hooks/use-auth';
 
 const getImageUrl = (id: string) => placeholderImages.find(p => p.id === id)?.imageUrl || 'https://placehold.co/400x300';
 
@@ -121,8 +123,42 @@ export const farms: Farm[] = [
     }
 ];
 
-export async function getFarms(): Promise<Farm[]> {
-    const farms = await getFarmsFromDb();
+const staticFarmsWithImages = farms.map((farm, index) => {
+    const logoUrlId = `farm-logo-${(index % 4) + 1}`;
+    const heroUrlId = `farm-hero-${(index % 4) + 1}`;
+    return {
+        ...farm,
+        logoUrl: getImageUrl(logoUrlId),
+        heroUrl: getImageUrl(heroUrlId),
+    }
+});
+
+/**
+ * Conditionally fetches farms based on user's auth status.
+ * - Logged-in users get live data from USDA API.
+ * - Guest users get a limited set of static mock data.
+ */
+export async function getExploreFarms(user: User | null, lat: number, lon: number): Promise<Farm[]> {
+    if (user) {
+        // User is logged in, fetch from live API
+        const apiFarms = await getFarmsFromUSDA(lat, lon);
+        return apiFarms.map((farm, index) => ({
+            ...farm,
+            logoUrl: getImageUrl(`farm-logo-${(index % 4) + 1}`),
+            heroUrl: getImageUrl(`farm-hero-${(index % 4) + 1}`),
+        }));
+    } else {
+        // User is a guest, return first 3 mock farms
+        return staticFarmsWithImages.slice(0, 3).map(farm => ({
+            ...farm,
+            distance: Math.random() * 20, // Add random distance for guests
+        }));
+    }
+}
+
+
+export async function getFarmsFromDb(): Promise<Farm[]> {
+    const farms = await getFarmsFromFirestore();
     
     if (farms.length === 0) {
         // Return static data if the database is empty, so the app is still usable.
@@ -145,15 +181,14 @@ export async function getFarmById(id: string): Promise<Farm | null> {
     if (!id) return null;
     
     // In a real app, this would fetch a single document from Firestore.
-    // For now, we'll find it in the list we get from the DB.
-    const allFarms = await getFarms();
-    
-    let farm = allFarms.find(f => f.id === id);
+    // For now, we'll find it in the static list, as API data is not persisted.
+    let farm = staticFarmsWithImages.find(f => f.id === id);
 
-    // Fallback to static data if not found in DB results
-    if (!farm) {
-      farm = staticFarmsWithImages.find(f => f.id === id);
-    }
+    // If not found in static data, it might have been an API result, 
+    // but we don't have a way to re-fetch a single API item by ID easily.
+    // In a real app, clicking a farm from the explore page would pass its data
+    // or we would query our DB for the ID.
+    // For now, we enhance the static farm with full product list.
     
     if (farm) {
         // Enhance the found farm with a richer product list for the detail page.
@@ -163,14 +198,3 @@ export async function getFarmById(id: string): Promise<Farm | null> {
 
     return null;
 }
-
-// Add images to static farm data
-const staticFarmsWithImages = farms.map((farm, index) => {
-    const logoUrlId = `farm-logo-${(index % 4) + 1}`;
-    const heroUrlId = `farm-hero-${(index % 4) + 1}`;
-    return {
-        ...farm,
-        logoUrl: getImageUrl(logoUrlId),
-        heroUrl: getImageUrl(heroUrlId),
-    }
-});

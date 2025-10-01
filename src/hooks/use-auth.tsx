@@ -42,19 +42,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             // Document doesn't exist, user has no role info yet.
             setUser(firebaseUser);
           }
+          setLoading(false);
         }, (error) => {
           console.error("Error with onSnapshot listener:", error);
           // If there's an error, still provide the basic user object.
           setUser(firebaseUser);
+          setLoading(false);
         });
 
       } else {
         // No user is signed in.
         setUser(null);
+        setLoading(false);
       }
-      
-      // Set loading to false only after the initial auth check is complete.
-      setLoading(false);
     });
 
     // Cleanup both auth and Firestore listeners on unmount.
@@ -66,16 +66,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
   }, []);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-background">
-        <Loader2 className="w-12 h-12 animate-spin text-primary" />
-      </div>
-    );
-  }
+  // Removed the top-level loading screen from here to prevent layout shift
+  // and allow pages to handle their own loading state based on auth.
 
   return (
-    <AuthContext.Provider value={{ user, loading: false }}>
+    <AuthContext.Provider value={{ user, loading }}>
       {children}
     </AuthContext.Provider>
   );
