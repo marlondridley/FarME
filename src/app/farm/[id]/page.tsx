@@ -1,7 +1,7 @@
 
 "use client";
 
-import { getFarmById } from '@/lib/data';
+import { getFarmById, products as allProducts } from '@/lib/data';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
