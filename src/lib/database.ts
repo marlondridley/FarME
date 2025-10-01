@@ -1,8 +1,9 @@
 
-import { collection, getDocs, doc, setDoc, getDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from './firebase';
-import type { Farm } from './types';
+import type { Farm, FarmStatus } from './types';
 import { GeoPoint } from 'firebase/firestore';
+import { geocode } from '@/ai/flows/geocode-flow';
 
 export async function getFarms(): Promise<Farm[]> {
   try {
@@ -36,17 +37,26 @@ export async function getFarmForUser(userId: string): Promise<Partial<Farm> | nu
 export async function saveFarmData(userId: string, data: { name: string; bio: string; address: string; }): Promise<void> {
     const farmDocRef = doc(db, 'farms', userId);
     
-    // For now, we'll use placeholder values for fields not in the form.
-    // A real app would have UI for these or more robust logic.
+    let geopoint = new GeoPoint(34.0522, -118.2437); // Default to LA
+    try {
+        const zipMatch = data.address.match(/\b\d{5}\b/);
+        if (zipMatch) {
+            const geoResult = await geocode({ zipCode: zipMatch[0] });
+            if (geoResult.latitude && geoResult.longitude) {
+                geopoint = new GeoPoint(geoResult.latitude, geoResult.longitude);
+            }
+        }
+    } catch (e) {
+        console.error("Geocoding failed, using default location.", e);
+    }
+
     await setDoc(farmDocRef, {
         name: data.name,
         bio: data.bio,
         location: {
             address: data.address,
-            // In a real app, you would geocode the address to get a GeoPoint.
-            geopoint: new GeoPoint(34.0522, -118.2437) 
+            geopoint: geopoint
         },
-        // Preserve existing fields if they exist, or set defaults.
         id: userId,
         products: [],
         type: 'farm',
@@ -54,4 +64,14 @@ export async function saveFarmData(userId: string, data: { name: string; bio: st
         logoUrl: '',
         heroUrl: '',
     }, { merge: true });
+}
+
+export async function updateFarmStatus(userId: string, status: FarmStatus): Promise<void> {
+    const farmDocRef = doc(db, 'farms', userId);
+    await updateDoc(farmDocRef, {
+      status: {
+        ...status,
+        timestamp: new Date(),
+      }
+    });
 }

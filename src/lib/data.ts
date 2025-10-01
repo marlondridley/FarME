@@ -4,6 +4,8 @@ import { placeholderImages } from './placeholder-images';
 import { getFarms as getFarmsFromFirestore } from './database';
 import { getFarmsFromUSDA } from './usda';
 import type { User } from '@/hooks/use-auth';
+import { getDoc, doc } from 'firebase/firestore';
+import { db } from './firebase';
 
 const getImageUrl = (id: string) => placeholderImages.find(p => p.id === id)?.imageUrl || 'https://placehold.co/400x300';
 
@@ -180,15 +182,33 @@ export async function getFarmsFromDb(): Promise<Farm[]> {
 export async function getFarmById(id: string): Promise<Farm | null> {
     if (!id) return null;
     
-    // In a real app, this would fetch a single document from Firestore.
-    // For now, we'll find it in the static list, as API data is not persisted.
+    // First, try to fetch from Firestore, as this would be the primary source of truth
+    try {
+        const farmDocRef = doc(db, 'farms', id);
+        const farmDoc = await getDoc(farmDocRef);
+        if (farmDoc.exists()) {
+            const farmData = farmDoc.data() as Farm;
+             const enrichedFarm = {
+                ...farmData,
+                id: farmDoc.id,
+                // Assign placeholder images if URLs are missing
+                logoUrl: farmData.logoUrl || getImageUrl(`farm-logo-1`),
+                heroUrl: farmData.heroUrl || getImageUrl(`farm-hero-1`),
+                // Enhance with full product list for the detail page
+                products: ['heirloom-tomatoes', 'green-lettuce', 'fresh-strawberries', 'organic-zucchini', 'free-range-eggs', 'wildflower-honey'],
+             };
+             // Firestore Timestamps need to be converted
+             if (enrichedFarm.status?.timestamp) {
+                enrichedFarm.status.timestamp = (enrichedFarm.status.timestamp as any).toDate();
+             }
+             return enrichedFarm;
+        }
+    } catch(e) {
+        console.error("Error fetching farm from Firestore:", e);
+    }
+    
+    // Fallback to static data if not found in Firestore
     let farm = staticFarmsWithImages.find(f => f.id === id);
-
-    // If not found in static data, it might have been an API result, 
-    // but we don't have a way to re-fetch a single API item by ID easily.
-    // In a real app, clicking a farm from the explore page would pass its data
-    // or we would query our DB for the ID.
-    // For now, we enhance the static farm with full product list.
     
     if (farm) {
         // Enhance the found farm with a richer product list for the detail page.

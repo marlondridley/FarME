@@ -9,6 +9,8 @@ import { Search, ArrowRight, Star, ShoppingCart } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { placeholderImages } from '@/lib/placeholder-images';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 const featureCards = [
     {
@@ -29,6 +31,18 @@ const featureCards = [
 ]
 
 export default function Home() {
+    const router = useRouter();
+    const [searchQuery, setSearchQuery] = useState('');
+
+    const handleSearch = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (searchQuery.trim()) {
+            router.push(`/explore?q=${encodeURIComponent(searchQuery.trim())}`);
+        } else {
+            router.push('/explore');
+        }
+    };
+
     const screenshotPlaceholders = [
         placeholderImages.find(p => p.id === 'farm-hero-1'),
         placeholderImages.find(p => p.id === 'farm-hero-4'),
@@ -48,23 +62,23 @@ export default function Home() {
                     <p className="mt-4 max-w-2xl mx-auto text-lg text-muted-foreground">
                         Discover the freshest produce from local farms and markets right in your community. Support local, eat fresh.
                     </p>
-                    <div className="mt-8 flex flex-col sm:flex-row justify-center items-center gap-4">
+                    <form onSubmit={handleSearch} className="mt-8 flex flex-col sm:flex-row justify-center items-center gap-4">
                         <div className="relative w-full max-w-sm">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground"/>
                             <Input
                                 id="search"
                                 name="search"
-                                placeholder="Search for apples, tomatoes, etc."
+                                placeholder="Search by zip code..."
                                 className="w-full h-12 pl-10 pr-4 text-base rounded-md"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
                             />
                         </div>
-                        <Link href="/explore">
-                           <Button size="lg" className="w-full sm:w-auto h-12">
-                                Find Farms
-                                <ArrowRight className="ml-2"/>
-                            </Button>
-                        </Link>
-                    </div>
+                        <Button type="submit" size="lg" className="w-full sm:w-auto h-12">
+                            Find Farms
+                            <ArrowRight className="ml-2"/>
+                        </Button>
+                    </form>
                 </div>
             </section>
 

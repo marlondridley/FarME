@@ -1,13 +1,12 @@
 
-
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useSearchParams, Suspense } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { MapPin, Search, SlidersHorizontal, History, Loader2, AlertTriangle, LocateFixed } from 'lucide-react';
+import { MapPin, Search, Loader2, AlertTriangle, LocateFixed } from 'lucide-react';
 import FarmCard from '@/components/farm-card';
 import { getExploreFarms } from '@/lib/data';
 import type { Farm } from '@/lib/types';
@@ -15,14 +14,17 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useAuth } from '@/hooks/use-auth';
 import { geocode } from '@/ai/flows/geocode-flow';
 
-export default function ExplorePage() {
+function ExplorePageContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, loading: authLoading } = useAuth();
+  
   const [farms, setFarms] = useState<Farm[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [coords, setCoords] = useState<{ latitude: number, longitude: number} | null>(null);
   const [locationError, setLocationError] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
 
   const handleUseMyLocation = () => {
     setLoading(true);
@@ -37,6 +39,8 @@ export default function ExplorePage() {
             latitude: position.coords.latitude,
             longitude: position.coords.longitude,
           });
+          setSearchQuery('');
+          router.push('/explore');
         },
         (err) => {
           console.warn(`ERROR(${err.code}): ${err.message}`);
@@ -76,6 +80,20 @@ export default function ExplorePage() {
   }
 
   useEffect(() => {
+    const q = searchParams.get('q');
+    if (q) {
+      setSearchQuery(q);
+      const form = new Event('submit', { cancelable: true, bubbles: true });
+      // We need a synthetic event for the form submission.
+      const syntheticEvent = {
+        preventDefault: () => {},
+        ...form
+      } as unknown as React.FormEvent;
+      handleZipSearch(syntheticEvent);
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
     // Fetch farms once we have location (or if auth state changes)
     if (authLoading || !coords) return;
 
@@ -104,14 +122,6 @@ export default function ExplorePage() {
                 <h1 className="text-3xl font-bold font-headline">Farms & Markets</h1>
                 <p className="text-muted-foreground">Discover fresh produce from local growers near you.</p>
              </div>
-             <div className="flex gap-2">
-                <Button variant="outline" size="icon" className="hidden sm:inline-flex">
-                    <History className="h-5 w-5" />
-                </Button>
-                <Button variant="outline" size="icon" className="hidden sm:inline-flex">
-                    <SlidersHorizontal className="h-5 w-5" />
-                </Button>
-            </div>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-2 mb-8 p-2 rounded-lg border bg-card sticky top-16 z-20">
@@ -191,4 +201,12 @@ export default function ExplorePage() {
           </div>
     </div>
   );
+}
+
+export default function ExplorePage() {
+  return (
+    <Suspense fallback={<div className="flex justify-center items-center h-screen"><Loader2 className="w-12 h-12 animate-spin text-primary"/></div>}>
+        <ExplorePageContent />
+    </Suspense>
+  )
 }

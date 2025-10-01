@@ -1,5 +1,11 @@
 
-import { GeoPoint } from "firebase/firestore";
+import { GeoPoint, Timestamp } from "firebase/firestore";
+
+export type FarmStatus = {
+  location: string;
+  productUpdates: string;
+  timestamp: Date;
+}
 
 export type Farm = {
   id: string;
@@ -11,6 +17,7 @@ export type Farm = {
     geopoint: GeoPoint;
     address: string;
   };
+  status?: FarmStatus;
   products: string[]; // array of product ids
   type: 'farm' | 'market' | 'vendor';
   rating: number;
@@ -24,7 +31,7 @@ export type Product = {
   imageUrl: string;
   price: number;
   category: string;
-  description: string;
+  description:string;
 };
 
 export type Order = {

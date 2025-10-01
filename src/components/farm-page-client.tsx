@@ -6,13 +6,16 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Heart, Star, ArrowLeft, Loader2 } from 'lucide-react';
+import { Heart, Star, ArrowLeft, Loader2, Info } from 'lucide-react';
 import { placeholderImages } from '@/lib/placeholder-images';
 import { useAuth } from '@/hooks/use-auth';
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import type { Farm } from '@/lib/types';
+import { formatDistanceToNow } from 'date-fns';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+
 
 export default function FarmPageClient({ id }: { id: string }) {
   const { user } = useAuth();
@@ -71,6 +74,10 @@ export default function FarmPageClient({ id }: { id: string }) {
   const farmProducts = allProducts.filter(p => farm.products.includes(p.id));
   const heroImage = placeholderImages.find(p => farm.heroUrl.includes(p.id));
 
+  const hasStatusUpdate = farm.status && (farm.status.location || farm.status.productUpdates);
+  const statusTimestamp = farm.status?.timestamp ? new Date(farm.status.timestamp) : null;
+
+
   return (
     <div className="pb-8">
       <div className="relative h-48 md:h-64 w-full">
@@ -78,7 +85,7 @@ export default function FarmPageClient({ id }: { id: string }) {
           <Image src={heroImage.imageUrl} alt={farm.name} fill className="object-cover" data-ai-hint={heroImage.imageHint} priority />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-        <Link href="/" className="absolute top-4 left-4 z-10">
+        <Link href="/explore" className="absolute top-4 left-4 z-10">
           <Button variant="secondary" size="icon" className="rounded-full h-10 w-10">
             <ArrowLeft className="w-5 h-5" />
           </Button>
@@ -112,34 +119,54 @@ export default function FarmPageClient({ id }: { id: string }) {
         </Card>
       </div>
 
-      <div className="container mt-8 px-4">
-        <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-          All Products
-        </h2>
-        {farmProducts.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-8">
-            {farmProducts.map(product => {
-              const productImage = placeholderImages.find(p => product.imageUrl.includes(p.id));
-              return (
-                <Link key={product.id} href={`/farm/${farm.id}/order?product=${product.id}`} className="block group">
-                  <Card className="bg-transparent border-0 shadow-none flex gap-4 items-start">
-                    <CardContent className="p-0 flex-grow">
-                      <h3 className="text-lg font-semibold">{product.name}</h3>
-                      <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{product.description}</p>
-                      <p className="text-md font-medium text-foreground mt-2">$${product.price.toFixed(2)}</p>
-                    </CardContent>
-                    <div className="relative h-24 w-24 sm:h-28 sm:w-28 rounded-md overflow-hidden shrink-0">
-                      <Image src={product.imageUrl} alt={product.name} fill className="object-cover transition-transform group-hover:scale-105" data-ai-hint={productImage?.imageHint || "product vegetable"} />
-                    </div>
-                  </Card>
-                </Link>
-              )})}
-          </div>
-        ) : (
-          <div className="text-center py-10 border rounded-lg bg-card">
-            <p className="text-muted-foreground">This farm has not listed any products yet.</p>
-          </div>
+      <div className="container mt-8 px-4 space-y-8">
+        {hasStatusUpdate && (
+          <Alert>
+            <Info className="h-4 w-4" />
+            <AlertTitle className="font-semibold">
+              Latest Update
+              {statusTimestamp && (
+                <span className="font-normal text-xs text-muted-foreground ml-2">
+                  ({formatDistanceToNow(statusTimestamp, { addSuffix: true })})
+                </span>
+              )}
+            </AlertTitle>
+            <AlertDescription>
+              {farm.status?.location && <p><strong>Location:</strong> {farm.status.location}</p>}
+              {farm.status?.productUpdates && <p><strong>Products:</strong> {farm.status.productUpdates}</p>}
+            </AlertDescription>
+          </Alert>
         )}
+
+        <div>
+            <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+            All Products
+            </h2>
+            {farmProducts.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-8">
+                {farmProducts.map(product => {
+                const productImage = placeholderImages.find(p => product.imageUrl.includes(p.id));
+                return (
+                    <Link key={product.id} href={`/farm/${farm.id}/order?product=${product.id}`} className="block group">
+                    <Card className="bg-transparent border-0 shadow-none flex gap-4 items-start">
+                        <CardContent className="p-0 flex-grow">
+                        <h3 className="text-lg font-semibold">{product.name}</h3>
+                        <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{product.description}</p>
+                        <p className="text-md font-medium text-foreground mt-2">$${product.price.toFixed(2)}</p>
+                        </CardContent>
+                        <div className="relative h-24 w-24 sm:h-28 sm:w-28 rounded-md overflow-hidden shrink-0">
+                        <Image src={product.imageUrl} alt={product.name} fill className="object-cover transition-transform group-hover:scale-105" data-ai-hint={productImage?.imageHint || "product vegetable"} />
+                        </div>
+                    </Card>
+                    </Link>
+                )})}
+            </div>
+            ) : (
+            <div className="text-center py-10 border rounded-lg bg-card">
+                <p className="text-muted-foreground">This farm has not listed any products yet.</p>
+            </div>
+            )}
+        </div>
       </div>
     </div>
   );

@@ -7,14 +7,23 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
+import { updateFarmStatus } from "@/lib/database";
 import { useState } from "react";
+import { Loader2 } from "lucide-react";
 
 export default function DashboardPage() {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [location, setLocation] = useState("");
   const [updates, setUpdates] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handlePostUpdate = () => {
+  const handlePostUpdate = async () => {
+    if (!user) {
+      toast({ variant: "destructive", title: "Error", description: "You must be logged in." });
+      return;
+    }
     if (!location && !updates) {
       toast({
         variant: "destructive",
@@ -23,12 +32,25 @@ export default function DashboardPage() {
       });
       return;
     }
-    toast({
-      title: "Status Updated!",
-      description: "Your customers have been notified.",
-    });
-    setLocation("");
-    setUpdates("");
+    setLoading(true);
+    try {
+      await updateFarmStatus(user.uid, { location, productUpdates: updates });
+      toast({
+        title: "Status Updated!",
+        description: "Your customers have been notified.",
+      });
+      setLocation("");
+      setUpdates("");
+    } catch (error) {
+      console.error("Failed to post update", error);
+      toast({
+        variant: "destructive",
+        title: "Update Failed",
+        description: "Could not post your update. Please try again.",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -59,7 +81,16 @@ export default function DashboardPage() {
               onChange={(e) => setUpdates(e.target.value)}
             />
           </div>
-          <Button onClick={handlePostUpdate}>Post Update</Button>
+          <Button onClick={handlePostUpdate} disabled={loading}>
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Posting...
+              </>
+            ) : (
+              "Post Update"
+            )}
+          </Button>
         </CardContent>
       </Card>
 
