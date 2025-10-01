@@ -80,14 +80,25 @@ export default function RegisterPage() {
       try {
         const token = await window.grecaptcha.enterprise.execute(process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY, {action: 'REGISTER'});
         
-        // You would typically send this token to your backend to create an assessment
-        // For now, we'll proceed with the client-side logic as the password check is done in a flow
-        console.log("reCAPTCHA token:", token);
+        // Check reCAPTCHA and password leak before proceeding
+        const result = await checkPasswordLeak({ 
+          email: data.email, 
+          password: data.password,
+          token: token 
+        });
 
-        // Check for password leak before proceeding
-        const leakResult = await checkPasswordLeak({ email: data.email, password: data.password });
+        if (result.assessment && (!result.assessment.valid || !result.assessment.actionMatches)) {
+            toast({
+              variant: "destructive",
+              title: "Bot Detected",
+              description: "reCAPTCHA verification failed. Please try again.",
+              duration: 8000,
+            });
+            setLoading(false);
+            return;
+        }
 
-        if (leakResult.leaked) {
+        if (result.leaked) {
           toast({
             variant: "destructive",
             title: "Insecure Password",

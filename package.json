@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@google-cloud/recaptcha-enterprise": "^5.3.0",
     "@genkit-ai/googleai": "*",
     "@genkit-ai/next": "*",
     "@hookform/resolvers": "^4.1.3",

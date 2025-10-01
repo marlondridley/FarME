@@ -3,7 +3,7 @@
 
 /**
  * @fileOverview This file defines a Genkit flow for checking for password leaks
- * using the Google reCAPTCHA Enterprise API.
+ * and verifying a reCAPTCHA token.
  * - checkPasswordLeak - The function that initiates the password leak check.
  * - PasswordLeakInput - The input type for the checkPasswordLeak function.
  * - PasswordLeakOutput - The return type for the checkPasswordLeak function.
@@ -14,17 +14,24 @@ import { z } from 'genkit';
 import { GoogleAuth } from 'google-auth-library';
 import { scrypt, createHash } from 'crypto';
 import { promisify } from 'util';
+import { RecaptchaEnterpriseServiceClient } from '@google-cloud/recaptcha-enterprise';
 
 const scryptAsync = promisify(scrypt);
 
 const PasswordLeakInputSchema = z.object({
-  email: z.string().email().describe('The user\'s email address.'),
-  password: z.string().min(6).describe('The user\'s password.'),
+  email: z.string().email().describe("The user's email address."),
+  password: z.string().min(6).describe("The user's password."),
+  token: z.string().describe('The reCAPTCHA token from the client.'),
 });
 export type PasswordLeakInput = z.infer<typeof PasswordLeakInputSchema>;
 
 const PasswordLeakOutputSchema = z.object({
   leaked: z.boolean().describe('Whether the credentials have been leaked.'),
+  assessment: z.object({
+    score: z.number().optional(),
+    valid: z.boolean(),
+    actionMatches: z.boolean(),
+  }).optional().describe('Result of the reCAPTCHA assessment.'),
 });
 export type PasswordLeakOutput = z.infer<typeof PasswordLeakOutputSchema>;
 
@@ -58,56 +65,83 @@ const passwordLeakFlow = ai.defineFlow(
   },
   async (input) => {
     const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
-    if (!projectId) {
-      throw new Error('Firebase project ID is not configured.');
+    const recaptchaKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
+    const recaptchaAction = 'REGISTER';
+
+    if (!projectId || !recaptchaKey) {
+      throw new Error('reCAPTCHA environment variables not set.');
     }
 
     try {
-        const passwordBytes = Buffer.from(input.password, 'utf-8');
+      // 1. Create and verify reCAPTCHA assessment
+      const client = new RecaptchaEnterpriseServiceClient();
+      const projectPath = client.projectPath(projectId);
+      const request = ({
+        assessment: {
+          event: {
+            token: input.token,
+            siteKey: recaptchaKey,
+          },
+        },
+        parent: projectPath,
+      });
 
-        const { lookup_hash_prefix, encrypted_user_credentials_hash } = await createHashes(input.email, passwordBytes);
+      const [ response ] = await client.createAssessment(request);
+      
+      const assessmentResult = {
+        score: response.riskAnalysis?.score,
+        valid: response.tokenProperties?.valid ?? false,
+        actionMatches: response.tokenProperties?.action === recaptchaAction,
+      };
 
-        const auth = new GoogleAuth({
-            scopes: 'https://www.googleapis.com/auth/cloud-platform',
-        });
-        const client = await auth.getClient();
-        const accessToken = (await client.getAccessToken()).token;
+      if (!assessmentResult.valid || !assessmentResult.actionMatches) {
+        console.warn('reCAPTCHA verification failed.', assessmentResult);
+        // Do not proceed if reCAPTCHA is invalid
+        return { leaked: false, assessment: assessmentResult };
+      }
 
-        const url = `https://recaptchaenterprise.googleapis.com/v1/projects/${projectId}/assessments`;
+      // 2. Proceed with password leak check
+      const passwordBytes = Buffer.from(input.password, 'utf-8');
+      const { lookup_hash_prefix, encrypted_user_credentials_hash } = await createHashes(input.email, passwordBytes);
 
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
+      const auth = new GoogleAuth({
+          scopes: 'https://www.googleapis.com/auth/cloud-platform',
+      });
+      const authClient = await auth.getClient();
+      const accessToken = (await authClient.getAccessToken()).token;
+      
+      const url = `https://recaptchaenterprise.googleapis.com/v1/projects/${projectId}/assessments`;
+      const leakResponse = await fetch(url, {
+          method: 'POST',
+          headers: {
             'Authorization': `Bearer ${accessToken}`,
             'Content-Type': 'application/json; charset=utf-8',
-            },
-            body: JSON.stringify({
-                private_password_leak_verification: {
-                    lookup_hash_prefix,
-                    encrypted_user_credentials_hash,
-                },
-            }),
-        });
+          },
+          body: JSON.stringify({
+              private_password_leak_verification: {
+                  lookup_hash_prefix,
+                  encrypted_user_credentials_hash,
+              },
+          }),
+      });
 
-        if (!response.ok) {
-            const errorBody = await response.text();
-            console.error('Password leak check failed:', errorBody);
-            // In case of API error, we conservatively assume no leak to not block user.
-            return { leaked: false };
-        }
+      if (!leakResponse.ok) {
+          const errorBody = await leakResponse.text();
+          console.error('Password leak check failed:', errorBody);
+          // In case of API error, we conservatively assume no leak to not block user.
+          return { leaked: false, assessment: assessmentResult };
+      }
 
-        const result = await response.json();
-
-        // The presence of encryptedLeakMatchPrefixes indicates a leak.
-        const leaked =
-            result.privatePasswordLeakVerification &&
-            Array.isArray(result.privatePasswordLeakVerification.encryptedLeakMatchPrefixes) &&
-            result.privatePasswordLeakVerification.encryptedLeakMatchPrefixes.length > 0;
-            
-        return { leaked };
+      const leakResult = await leakResponse.json();
+      const leaked =
+          leakResult.privatePasswordLeakVerification &&
+          Array.isArray(leakResult.privatePasswordLeakVerification.encryptedLeakMatchPrefixes) &&
+          leakResult.privatePasswordLeakVerification.encryptedLeakMatchPrefixes.length > 0;
+          
+      return { leaked, assessment: assessmentResult };
 
     } catch (error) {
-      console.error('Error during password leak check:', error);
+      console.error('Error during password leak/reCAPTCHA flow:', error);
       // In case of any unexpected error, fail open (assume not leaked) to avoid blocking registration.
       return { leaked: false };
     }
