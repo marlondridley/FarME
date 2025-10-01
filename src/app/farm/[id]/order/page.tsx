@@ -18,7 +18,8 @@ import { ArrowLeft, Minus, Plus, Loader2 } from 'lucide-react';
 import React from 'react';
 import { processOrder } from '@/ai/flows/process-order-flow';
 
-export default function OrderPage({ params: { id: farmId } }: { params: { id: string } }) {
+export default function OrderPage({ params }: { params: { id: string } }) {
+  const farmId = params.id;
   const router = useRouter();
   const searchParams = useSearchParams();
   const productId = searchParams.get('product');
