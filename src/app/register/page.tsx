@@ -31,7 +31,7 @@ import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { checkPasswordLeak } from "@/ai/flows/password-leak-flow";
+import { checkPasswordLeak, RECAPTCHA_REGISTER_ACTION } from "@/ai/flows/password-leak-flow";
 
 // Augment the window object with the grecaptcha type
 declare global {
@@ -78,7 +78,7 @@ export default function RegisterPage() {
 
     window.grecaptcha.enterprise.ready(async () => {
       try {
-        const token = await window.grecaptcha.enterprise.execute(process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY, {action: 'REGISTER'});
+        const token = await window.grecaptcha.enterprise.execute(process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY, {action: RECAPTCHA_REGISTER_ACTION});
         
         // Check reCAPTCHA and password leak before proceeding
         const result = await checkPasswordLeak({ 

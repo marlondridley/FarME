@@ -18,6 +18,8 @@ import { RecaptchaEnterpriseServiceClient } from '@google-cloud/recaptcha-enterp
 
 const scryptAsync = promisify(scrypt);
 
+export const RECAPTCHA_REGISTER_ACTION = 'REGISTER';
+
 const PasswordLeakInputSchema = z.object({
   email: z.string().email().describe("The user's email address."),
   password: z.string().min(6).describe("The user's password."),
@@ -66,7 +68,6 @@ const passwordLeakFlow = ai.defineFlow(
   async (input) => {
     const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
     const recaptchaKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
-    const recaptchaAction = 'REGISTER';
 
     if (!projectId || !recaptchaKey) {
       throw new Error('reCAPTCHA environment variables not set.');
@@ -90,7 +91,7 @@ const passwordLeakFlow = ai.defineFlow(
     const assessmentResult = {
       score: response.riskAnalysis?.score,
       valid: response.tokenProperties?.valid ?? false,
-      actionMatches: response.tokenProperties?.action === recaptchaAction,
+      actionMatches: response.tokenProperties?.action === RECAPTCHA_REGISTER_ACTION,
     };
 
     if (!assessmentResult.valid || !assessmentResult.actionMatches) {
@@ -98,7 +99,7 @@ const passwordLeakFlow = ai.defineFlow(
             console.warn(`reCAPTCHA token was invalid: ${response.tokenProperties.invalidReason}`);
         }
         if (!assessmentResult.actionMatches) {
-            console.warn(`reCAPTCHA action did not match. Expected: ${recaptchaAction}, Got: ${response.tokenProperties.action}`);
+            console.warn(`reCAPTCHA action did not match. Expected: ${RECAPTCHA_REGISTER_ACTION}, Got: ${response.tokenProperties.action}`);
         }
       return { leaked: false, assessment: assessmentResult };
     }
