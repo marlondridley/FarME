@@ -30,20 +30,15 @@ async function fetchFromDirectory(directory: string, lat: number, lon: number, a
     const radius = 50; // Search within a 50-mile radius
     const url = `https://www.usdalocalfoodportal.com/api/${directory}/?apikey=${apiKey}&x=${lon}&y=${lat}&radius=${radius}`;
 
-    try {
-        const response = await fetch(url);
-        if (!response.ok) {
-            console.error(`USDA API request for ${directory} failed with status: ${response.status}`);
-            const errorText = await response.text();
-            console.error('Error details:', errorText);
-            return [];
-        }
-        const data = await response.json();
-        return data.data.map((item: any) => ({ ...item, listing_type: directory as any}));
-    } catch (error) {
-        console.error(`Error fetching from ${directory}:`, error);
-        return [];
+    const response = await fetch(url);
+    if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`USDA API request for ${directory} failed with status: ${response.status}`, errorText);
+        // Throw an error to be caught by the caller
+        throw new Error(`Failed to fetch from ${directory}. Status: ${response.status}`);
     }
+    const data = await response.json();
+    return data.data.map((item: any) => ({ ...item, listing_type: directory as any}));
 }
 
 function getFarmType(listingType: USDALocalFoodMarket['listing_type']): Farm['type'] {
@@ -65,41 +60,48 @@ export async function getFarmsFromUSDA(lat: number, lng: number): Promise<Farm[]
 
     if (!apiKey || apiKey === "YOUR_API_KEY") {
         console.error("USDA API Key is not configured. Please add it to your .env file.");
-        return []; 
+        throw new Error("USDA API Key is not configured.");
     }
     
     const directories: USDALocalFoodMarket['listing_type'][] = ['farmersmarket', 'csa', 'onfarmmarket'];
-    const allResults = await Promise.all(
-        directories.map(dir => fetchFromDirectory(dir, lat, lng, apiKey))
-    );
     
-    const combinedResults = allResults.flat();
-    const uniqueResults = Array.from(new Map(combinedResults.map(item => [item.listing_id, item])).values());
+    try {
+        const allResults = await Promise.all(
+            directories.map(dir => fetchFromDirectory(dir, lat, lng, apiKey))
+        );
+        
+        const combinedResults = allResults.flat();
+        const uniqueResults = Array.from(new Map(combinedResults.map(item => [item.listing_id, item])).values());
 
-    return uniqueResults
-        .filter(isValidMarket)
-        .map((market: USDALocalFoodMarket) => {
-            const fullAddress = [
-                market.location_address, 
-                market.location_city,
-                market.location_state,
-                market.location_zipcode
-            ].filter(Boolean).join(', ');
+        return uniqueResults
+            .filter(isValidMarket)
+            .map((market: USDALocalFoodMarket) => {
+                const fullAddress = [
+                    market.location_address, 
+                    market.location_city,
+                    market.location_state,
+                    market.location_zipcode
+                ].filter(Boolean).join(', ');
 
-            return {
-                id: market.listing_id,
-                name: market.listing_name,
-                bio: market.media_website || 'A local food provider offering fresh products.',
-                location: {
-                    geopoint: new GeoPoint(market.lat, market.lon),
-                    address: fullAddress,
-                },
-                products: [], 
-                type: getFarmType(market.listing_type),
-                rating: 4.5, // Assign a default rating
-                distance: market.d,
-                logoUrl: '', 
-                heroUrl: '',
-            } as Farm;
-        });
+                return {
+                    id: market.listing_id,
+                    name: market.listing_name,
+                    bio: market.media_website || 'A local food provider offering fresh products.',
+                    location: {
+                        geopoint: new GeoPoint(market.lat, market.lon),
+                        address: fullAddress,
+                    },
+                    products: [], 
+                    type: getFarmType(market.listing_type),
+                    rating: 4.5, // Assign a default rating
+                    distance: market.d,
+                    logoUrl: '', 
+                    heroUrl: '',
+                } as Farm;
+            });
+    } catch(error) {
+        console.error("An error occurred while fetching farms from USDA API:", error);
+        // Re-throw the error so the UI can handle it
+        throw error;
+    }
 }
