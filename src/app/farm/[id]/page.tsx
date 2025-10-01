@@ -16,7 +16,8 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import type { Farm } from '@/lib/types';
 
-export default function FarmPage({ params: { id } }: { params: { id: string } }) {
+export default function FarmPage({ params }: { params: { id: string } }) {
+  const { id } = params;
   const { user } = useAuth();
   const { toast } = useToast();
   const [isFavorited, setIsFavorited] = useState(false);
