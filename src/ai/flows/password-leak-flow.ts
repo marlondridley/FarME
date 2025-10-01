@@ -31,7 +31,7 @@ const PasswordLeakOutputSchema = z.object({
     score: z.number().optional(),
     valid: z.boolean(),
     actionMatches: z.boolean(),
-  }).optional().describe('Result of the reCAPTCHA assessment.'),
+  }).describe('Result of the reCAPTCHA assessment.'),
 });
 export type PasswordLeakOutput = z.infer<typeof PasswordLeakOutputSchema>;
 
@@ -72,78 +72,80 @@ const passwordLeakFlow = ai.defineFlow(
       throw new Error('reCAPTCHA environment variables not set.');
     }
 
-    try {
-      // 1. Create and verify reCAPTCHA assessment
-      const client = new RecaptchaEnterpriseServiceClient();
-      const projectPath = client.projectPath(projectId);
-      const request = ({
-        assessment: {
-          event: {
-            token: input.token,
-            siteKey: recaptchaKey,
-          },
+    // 1. Create and verify reCAPTCHA assessment
+    const client = new RecaptchaEnterpriseServiceClient();
+    const projectPath = client.projectPath(projectId);
+    const request = ({
+      assessment: {
+        event: {
+          token: input.token,
+          siteKey: recaptchaKey,
         },
-        parent: projectPath,
-      });
+      },
+      parent: projectPath,
+    });
 
-      const [ response ] = await client.createAssessment(request);
-      
-      const assessmentResult = {
-        score: response.riskAnalysis?.score,
-        valid: response.tokenProperties?.valid ?? false,
-        actionMatches: response.tokenProperties?.action === recaptchaAction,
-      };
+    const [ response ] = await client.createAssessment(request);
+    
+    const assessmentResult = {
+      score: response.riskAnalysis?.score,
+      valid: response.tokenProperties?.valid ?? false,
+      actionMatches: response.tokenProperties?.action === recaptchaAction,
+    };
 
-      if (!assessmentResult.valid || !assessmentResult.actionMatches) {
-        console.warn('reCAPTCHA verification failed.', assessmentResult);
-        // Do not proceed if reCAPTCHA is invalid
-        return { leaked: false, assessment: assessmentResult };
-      }
-
-      // 2. Proceed with password leak check
-      const passwordBytes = Buffer.from(input.password, 'utf-8');
-      const { lookup_hash_prefix, encrypted_user_credentials_hash } = await createHashes(input.email, passwordBytes);
-
-      const auth = new GoogleAuth({
-          scopes: 'https://www.googleapis.com/auth/cloud-platform',
-      });
-      const authClient = await auth.getClient();
-      const accessToken = (await authClient.getAccessToken()).token;
-      
-      const url = `https://recaptchaenterprise.googleapis.com/v1/projects/${projectId}/assessments`;
-      const leakResponse = await fetch(url, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json; charset=utf-8',
-          },
-          body: JSON.stringify({
-              private_password_leak_verification: {
-                  lookup_hash_prefix,
-                  encrypted_user_credentials_hash,
-              },
-          }),
-      });
-
-      if (!leakResponse.ok) {
-          const errorBody = await leakResponse.text();
-          console.error('Password leak check failed:', errorBody);
-          // In case of API error, we conservatively assume no leak to not block user.
-          return { leaked: false, assessment: assessmentResult };
-      }
-
-      const leakResult = await leakResponse.json();
-      const leaked =
-          leakResult.privatePasswordLeakVerification &&
-          Array.isArray(leakResult.privatePasswordLeakVerification.encryptedLeakMatchPrefixes) &&
-          leakResult.privatePasswordLeakVerification.encryptedLeakMatchPrefixes.length > 0;
-          
-      return { leaked, assessment: assessmentResult };
-
-    } catch (error) {
-      console.error('Error during password leak/reCAPTCHA flow:', error);
-      // In case of any unexpected error, fail open (assume not leaked) to avoid blocking registration.
-      return { leaked: false };
+    if (!assessmentResult.valid || !assessmentResult.actionMatches) {
+        if (!assessmentResult.valid) {
+            console.warn(`reCAPTCHA token was invalid: ${response.tokenProperties.invalidReason}`);
+        }
+        if (!assessmentResult.actionMatches) {
+            console.warn(`reCAPTCHA action did not match. Expected: ${recaptchaAction}, Got: ${response.tokenProperties.action}`);
+        }
+      return { leaked: false, assessment: assessmentResult };
     }
+    
+    console.log(`reCAPTCHA score: ${assessmentResult.score}`);
+
+    // 2. Proceed with password leak check
+    const passwordBytes = Buffer.from(input.password, 'utf-8');
+    const { lookup_hash_prefix, encrypted_user_credentials_hash } = await createHashes(input.email, passwordBytes);
+
+    const auth = new GoogleAuth({
+        scopes: 'https://www.googleapis.com/auth/cloud-platform',
+    });
+    const authClient = await auth.getClient();
+    const accessToken = (await authClient.getAccessToken())?.token;
+    
+    if (!accessToken) {
+        throw new Error("Could not get access token for password leak check.");
+    }
+    
+    const url = `https://passwordleak.googleapis.com/v1beta1/leakedCredentials:search`;
+    const leakResponse = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json; charset=utf-8',
+          'X-Goog-User-Project': projectId,
+        },
+        body: JSON.stringify({
+            lookup_hash_prefix,
+            encrypted_user_credentials_hash,
+        }),
+    });
+
+    if (!leakResponse.ok) {
+        const errorBody = await leakResponse.text();
+        console.error('Password leak check failed with status:', leakResponse.status, errorBody);
+        // In case of API error, we conservatively assume no leak to not block user.
+        return { leaked: false, assessment: assessmentResult };
+    }
+
+    const leakResult = await leakResponse.json();
+    const leaked =
+        leakResult &&
+        Array.isArray(leakResult.encryptedLeakMatchPrefixes) &&
+        leakResult.encryptedLeakMatchPrefixes.length > 0;
+        
+    return { leaked, assessment: assessmentResult };
   }
 );

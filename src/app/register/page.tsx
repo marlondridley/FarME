@@ -87,7 +87,7 @@ export default function RegisterPage() {
           token: token 
         });
 
-        if (result.assessment && (!result.assessment.valid || !result.assessment.actionMatches)) {
+        if (!result.assessment.valid || !result.assessment.actionMatches) {
             toast({
               variant: "destructive",
               title: "Bot Detected",
