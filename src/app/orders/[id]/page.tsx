@@ -12,7 +12,7 @@ const timelineEvents = [
 ];
 
 export default function OrderTrackingPage({ params }: { params: { id: string } }) {
-  const { id: orderId } = params;
+  const orderId = params.id;
   return (
     <div className="container mx-auto py-8 px-4 max-w-2xl">
       <Card>
