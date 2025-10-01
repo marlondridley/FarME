@@ -1,9 +1,9 @@
 
 "use client";
 
-import { useEffect, useState, useSearchParams, Suspense } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { MapPin, Search, Loader2, AlertTriangle, LocateFixed } from 'lucide-react';
@@ -70,11 +70,11 @@ function ExplorePageContent() {
         setCoords({ latitude: geo.latitude, longitude: geo.longitude });
       } else {
         setLocationError("Could not find that zip code. Please try another one.");
-        setLoading(false);
       }
     } catch(err) {
       console.error("Geocoding error", err);
       setLocationError("There was an issue looking up that zip code. Please try again.");
+    } finally {
       setLoading(false);
     }
   }
@@ -174,8 +174,16 @@ function ExplorePageContent() {
                 </div>
             )}
 
-            {!loading && !error && !locationError && farms.length === 0 && (
+            {!loading && !error && !locationError && farms.length === 0 && !authLoading && !coords && (
                 <div className="flex flex-col items-center justify-center h-64 text-center border rounded-lg">
+                    <MapPin className="w-12 h-12 text-muted-foreground/50 mb-4" />
+                    <h3 className="text-lg font-semibold">Find Farms Near You</h3>
+                    <p className="text-muted-foreground max-w-md">Enter a zip code or use your location to start exploring local farms and markets.</p>
+                </div>
+            )}
+            
+            {!loading && farms.length === 0 && (coords || error || locationError) && (
+                 <div className="flex flex-col items-center justify-center h-64 text-center border rounded-lg">
                     <MapPin className="w-12 h-12 text-muted-foreground/50 mb-4" />
                     <h3 className="text-lg font-semibold">No Farms Found</h3>
                     <p className="text-muted-foreground max-w-md">We couldn't find any farms for this location. Try a different zip code or use your current location.</p>
