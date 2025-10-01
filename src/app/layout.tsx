@@ -6,6 +6,7 @@ import Header from '@/components/layout/header';
 import { Inter as FontSans } from 'next/font/google';
 import { cn } from '@/lib/utils';
 import { AuthProvider } from '@/hooks/use-auth';
+import Script from 'next/script';
 
 
 export const metadata: Metadata = {
@@ -25,6 +26,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <Script 
+          src={`https://www.google.com/recaptcha/enterprise.js?render=${process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}`} 
+          strategy="beforeInteractive" 
+        />
+      </head>
       <body className={cn("font-sans antialiased dark", fontSans.variable)}>
         <AuthProvider>
           <div className="flex min-h-screen flex-col bg-background">

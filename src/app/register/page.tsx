@@ -33,6 +33,13 @@ import { auth, db } from "@/lib/firebase";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { checkPasswordLeak } from "@/ai/flows/password-leak-flow";
 
+// Augment the window object with the grecaptcha type
+declare global {
+  interface Window {
+    grecaptcha: any;
+  }
+}
+
 const formSchema = z.object({
   email: z.string().email({ message: "Invalid email address." }),
   password: z.string().min(6, { message: "Password must be at least 6 characters." }),
@@ -58,53 +65,72 @@ export default function RegisterPage() {
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     setLoading(true);
-    try {
-      // Check for password leak before proceeding
-      const leakResult = await checkPasswordLeak({ email: data.email, password: data.password });
 
-      if (leakResult.leaked) {
+    if (!window.grecaptcha) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'reCAPTCHA not loaded. Please try again.',
+      });
+      setLoading(false);
+      return;
+    }
+
+    window.grecaptcha.enterprise.ready(async () => {
+      try {
+        const token = await window.grecaptcha.enterprise.execute(process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY, {action: 'REGISTER'});
+        
+        // You would typically send this token to your backend to create an assessment
+        // For now, we'll proceed with the client-side logic as the password check is done in a flow
+        console.log("reCAPTCHA token:", token);
+
+        // Check for password leak before proceeding
+        const leakResult = await checkPasswordLeak({ email: data.email, password: data.password });
+
+        if (leakResult.leaked) {
+          toast({
+            variant: "destructive",
+            title: "Insecure Password",
+            description: "This password has been exposed in a data breach. Please choose a different password.",
+            duration: 8000,
+          });
+          setLoading(false);
+          return;
+        }
+
+        const userCredential = await createUserWithEmailAndPassword(
+          auth,
+          data.email,
+          data.password
+        );
+        
+        const user = userCredential.user;
+
+        // Save user role and other details to Firestore
+        await setDoc(doc(db, "users", user.uid), {
+          uid: user.uid,
+          email: user.email,
+          role: data.role,
+          createdAt: new Date(),
+        });
+
+        toast({
+          title: "Account Created!",
+          description: "Next, let's complete your subscription.",
+        });
+
+        router.push(`/subscribe?role=${data.role}`);
+      } catch (error: any) {
+        console.error("Registration error:", error);
         toast({
           variant: "destructive",
-          title: "Insecure Password",
-          description: "This password has been exposed in a data breach. Please choose a different password.",
-          duration: 8000,
+          title: "Registration Failed",
+          description: error.message || "An unexpected error occurred.",
         });
+      } finally {
         setLoading(false);
-        return;
       }
-
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        data.email,
-        data.password
-      );
-      
-      const user = userCredential.user;
-
-      // Save user role and other details to Firestore
-      await setDoc(doc(db, "users", user.uid), {
-        uid: user.uid,
-        email: user.email,
-        role: data.role,
-        createdAt: new Date(),
-      });
-
-      toast({
-        title: "Account Created!",
-        description: "Next, let's complete your subscription.",
-      });
-
-      router.push(`/subscribe?role=${data.role}`);
-    } catch (error: any) {
-      console.error("Registration error:", error);
-      toast({
-        variant: "destructive",
-        title: "Registration Failed",
-        description: error.message || "An unexpected error occurred.",
-      });
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   return (
